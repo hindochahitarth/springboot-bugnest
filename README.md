@@ -1,7 +1,3 @@
-Here is your **same content**, only properly aligned and formatted (no wording changed):
-
----
-
 ### 🐞 BugNest – Enterprise Bug Tracking & Workflow System
 
 BugNest is a Jira-inspired enterprise application built using Java Spring Boot that streamlines bug tracking, task management, and team collaboration through structured workflows and role-based access control. It enables development teams to efficiently report, assign, track, and resolve issues using Kanban-style boards and configurable lifecycle states.
