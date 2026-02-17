@@ -28,36 +28,41 @@ spring.mail.password=YOUR_APP_PASSWORD
 
 ## ✅ Current Functionality
 
-### Authentication & Roles
-- **JWT-Based Login**: Secure authentication.
-- **Role-Based Access**:
-  - **Admin**: Full access, User Management.
-  - **Manager**: Project & Team oversight.
-  - **Developer**: Start/Stop work (Dashboard).
-  - **Tester**: Report bugs (Dashboard).
+### 🔐 Authentication & Roles
+- **JWT-Based Login**: Secure cross-origin authentication.
+- **Enterprise Role-Based Access (RBAC)**:
+  - **Admin**: Full system control & User Management.
+  - **Manager**: Project oversight, team management, and bug assignment.
+  - **Developer**: View projects, update bug status (In Progress/Review), and manage Kanban board.
+  - **Tester**: Report bugs, verify fixes, and track project quality.
 
-### Key Features
-1.  **Admin User Management**:
-    - View users filtered by Role (Admin, Manager, Developer, Tester).
-    - **Create New Users**: Auto-generates a secure password and sends it via **Email**.
-2.  **Dashboards**:
-    - Dedicated, responsive dashboards for each role.
-    - Enterprise SaaS UI design (Sidebar, Navbar, Cards).
-3.  **Settings Module**:
-    - **Profile**: Update personal details.
-    - **Security**: Change Password functionality.
-4.  **Email System**:
-    - Automated emails for account creation (Welcome Email with Credentials).
+### 🛠️ Key Modules
+1.  **Project Management**:
+    - Create and manage projects with unique keys (e.g., `PRJ-1`).
+    - Add/Invite team members to specific projects.
+    - Role-based project visibility.
+2.  **Bug Tracking System**:
+    - Report bugs with priority (Low, Medium, High) and detailed descriptions.
+    - Assign bugs to specific developers.
+    - Track status: `OPEN` → `IN_PROGRESS` → `REVIEW` → `TESTING` → `CLOSED`.
+3.  **Visual Kanban Board**:
+    - Drag-and-drop style status updates for a quick overview of project health.
+4.  **Admin User Management**:
+    - centralized user directory with role-based filtering.
+    - **Automated Onboarding**: Create users and trigger auto-generated password emails.
+5.  **Settings & Profile**:
+    - Personal details management and secure password change.
 
 ## 🏃‍♂️ How to Run
 
-**Backend:**
+**Backend (Java 17+):**
 ```bash
 ./mvnw spring-boot:run
 ```
 
-**Frontend:**
+**Frontend (Node.js):**
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
