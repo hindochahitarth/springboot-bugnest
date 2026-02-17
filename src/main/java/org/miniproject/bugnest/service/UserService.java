@@ -1,9 +1,9 @@
-package org.miniproject.BugNest.service;
+package org.miniproject.bugnest.service;
 
-import org.miniproject.BugNest.dto.PasswordChangeRequest;
-import org.miniproject.BugNest.dto.ProfileUpdateRequest;
-import org.miniproject.BugNest.model.User;
-import org.miniproject.BugNest.repository.UserRepository;
+import org.miniproject.bugnest.dto.PasswordChangeRequest;
+import org.miniproject.bugnest.dto.ProfileUpdateRequest;
+import org.miniproject.bugnest.model.User;
+import org.miniproject.bugnest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ public class UserService {
 
     // --- User Management (Admin) ---
 
-    public java.util.List<User> getAllUsersByRole(org.miniproject.BugNest.model.Role role) {
+    public java.util.List<User> getAllUsersByRole(org.miniproject.bugnest.model.Role role) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getRole() == role)
                 .collect(java.util.stream.Collectors.toList());
@@ -61,7 +61,7 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
-    public User createUser(org.miniproject.BugNest.dto.UserCreateRequest request) {
+    public User createUser(org.miniproject.bugnest.dto.UserCreateRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email is already in use!");
         }
@@ -71,8 +71,8 @@ public class UserService {
         user.setEmail(request.getEmail());
         // Mobile number handling would go here if User entity had it, for now skipping or adding to logic
         
-        user.setRole(org.miniproject.BugNest.model.Role.valueOf(request.getRole().toUpperCase()));
-        user.setStatus(org.miniproject.BugNest.model.Status.ACTIVE);
+        user.setRole(org.miniproject.bugnest.model.Role.valueOf(request.getRole().toUpperCase()));
+        user.setStatus(org.miniproject.bugnest.model.Status.ACTIVE);
 
         // Auto-generate password
         String tempPassword = generateRandomPassword();

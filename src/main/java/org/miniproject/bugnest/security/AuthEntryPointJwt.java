@@ -1,4 +1,4 @@
-package org.miniproject.BugNest.security;
+package org.miniproject.bugnest.security;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

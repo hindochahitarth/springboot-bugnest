@@ -1,4 +1,4 @@
-package org.miniproject.BugNest.dto;
+package org.miniproject.bugnest.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,10 +1,10 @@
-package org.miniproject.BugNest.controller;
+package org.miniproject.bugnest.controller;
 
-import org.miniproject.BugNest.dto.AuthResponse;
-import org.miniproject.BugNest.dto.LoginRequest;
-import org.miniproject.BugNest.repository.UserRepository;
-import org.miniproject.BugNest.security.JwtUtils;
-import org.miniproject.BugNest.service.CustomUserDetailsService;
+import org.miniproject.bugnest.dto.AuthResponse;
+import org.miniproject.bugnest.dto.LoginRequest;
+import org.miniproject.bugnest.repository.UserRepository;
+import org.miniproject.bugnest.security.JwtUtils;
+import org.miniproject.bugnest.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

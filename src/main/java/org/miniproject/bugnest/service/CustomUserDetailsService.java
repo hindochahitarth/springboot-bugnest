@@ -1,7 +1,7 @@
-package org.miniproject.BugNest.service;
+package org.miniproject.bugnest.service;
 
-import org.miniproject.BugNest.model.User;
-import org.miniproject.BugNest.repository.UserRepository;
+import org.miniproject.bugnest.model.User;
+import org.miniproject.bugnest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

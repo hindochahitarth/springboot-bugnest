@@ -1,4 +1,4 @@
-package org.miniproject.BugNest.dto;
+package org.miniproject.bugnest.dto;
 
 public class ProfileUpdateRequest {
     private String fullName;

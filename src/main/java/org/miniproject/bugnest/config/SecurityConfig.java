@@ -1,8 +1,8 @@
-package org.miniproject.BugNest.config;
+package org.miniproject.bugnest.config;
 
-import org.miniproject.BugNest.security.AuthEntryPointJwt;
-import org.miniproject.BugNest.security.AuthTokenFilter;
-import org.miniproject.BugNest.service.CustomUserDetailsService;
+import org.miniproject.bugnest.security.AuthEntryPointJwt;
+import org.miniproject.bugnest.security.AuthTokenFilter;
+import org.miniproject.bugnest.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,18 +28,18 @@ public class SecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
+    @Autowired
+    private org.miniproject.bugnest.security.JwtUtils jwtUtils;
+
     @Bean
-    public AuthTokenFilter authenticationJwtTokenFilter() {
-        return new AuthTokenFilter();
+    public AuthTokenFilter authTokenFilter() {
+        return new AuthTokenFilter(jwtUtils, userDetailsService);
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        // Constructor injection for UserDetailsService
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-        
         authProvider.setPasswordEncoder(passwordEncoder());
-
         return authProvider;
     }
 
@@ -54,33 +54,28 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:5173"); // Allow frontend
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .cors(cors -> {}) // Enable CORS with default/bean config
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(java.util.List.of("http://localhost:5173"));
+                    config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                    config.setAllowedHeaders(java.util.List.of("*"));
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> 
                         auth.requestMatchers("/api/auth/**").permitAll()
+                            .requestMatchers("/api/test/**").permitAll()
                             .anyRequest().authenticated()
                 );
 
         http.authenticationProvider(authenticationProvider());
-
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+

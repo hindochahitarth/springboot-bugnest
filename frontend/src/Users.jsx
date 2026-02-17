@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from './context/AuthContext';
-import Sidebar from './components/Sidebar';
-import TopNavbar from './components/TopNavbar';
 import './Dashboard.css';
 
 const Users = () => {
@@ -32,96 +30,75 @@ const Users = () => {
     };
 
     return (
-        <div className="app-container">
-            <Sidebar />
-            <div className="main-layout">
-                <TopNavbar title="User Management" />
-                <main className="main-content">
-                    <div className="content-wrapper">
+        <div className="page-container">
+            <header className="page-header">
+                <div className="role-tabs" style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: '0.5rem' }}>
+                    {['ADMIN', 'MANAGER', 'DEVELOPER', 'TESTER'].map(role => (
+                        <button
+                            key={role}
+                            className={`page-btn ${activeRole === role ? 'active' : ''}`}
+                            onClick={() => setActiveRole(role)}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                border: 'none',
+                                boxShadow: activeRole === role ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                            }}
+                        >
+                            {role.charAt(0) + role.slice(1).toLowerCase()}s
+                        </button>
+                    ))}
+                </div>
+                <button className="btn-primary-sm" onClick={() => setShowModal(true)}>+ Add User</button>
+            </header>
 
-                        {/* Header Actions */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <div className="role-tabs" style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: '0.5rem' }}>
-                                {['ADMIN', 'MANAGER', 'DEVELOPER', 'TESTER'].map(role => (
-                                    <button
-                                        key={role}
-                                        onClick={() => setActiveRole(role)}
-                                        style={{
-                                            padding: '0.5rem 1rem',
-                                            border: 'none',
-                                            borderRadius: '0.375rem',
-                                            background: activeRole === role ? 'white' : 'transparent',
-                                            color: activeRole === role ? '#2563eb' : '#64748b',
-                                            fontWeight: activeRole === role ? 600 : 500,
-                                            boxShadow: activeRole === role ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        {role.charAt(0) + role.slice(1).toLowerCase()}s
-                                    </button>
-                                ))}
-                            </div>
-                            <button className="btn-primary-sm" onClick={() => setShowModal(true)}>+ Add User</button>
-                        </div>
-
-                        {/* Users Table */}
-                        <div className="users-card" style={{ background: 'white', borderRadius: '0.5rem', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                                    <tr>
-                                        <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Name</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Email</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Role</th>
-                                        <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Status</th>
-                                        <th style={{ padding: '1rem', textAlign: 'right', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {loading ? (
-                                        <tr><td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading users...</td></tr>
-                                    ) : users.length === 0 ? (
-                                        <tr><td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>No users found.</td></tr>
-                                    ) : (
-                                        users.map(user => (
-                                            <tr key={user.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                                    <div style={{ width: '32px', height: '32px', background: '#eff6ff', color: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '0.8rem' }}>
-                                                        {user.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <span style={{ fontWeight: 500, color: '#1e293b' }}>{user.name}</span>
-                                                </td>
-                                                <td style={{ padding: '1rem', color: '#475569', fontSize: '0.9rem' }}>{user.email}</td>
-                                                <td style={{ padding: '1rem' }}>
-                                                    <span style={{
-                                                        background: '#f1f5f9', color: '#475569', padding: '0.25rem 0.6rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600
-                                                    }}>
-                                                        {user.role}
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: '1rem' }}>
-                                                    <span style={{
-                                                        background: user.status === 'ACTIVE' ? '#ecfdf5' : '#fef2f2',
-                                                        color: user.status === 'ACTIVE' ? '#059669' : '#dc2626',
-                                                        padding: '0.25rem 0.6rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem'
-                                                    }}>
-                                                        {user.status === 'ACTIVE' ? '●' : '○'} {user.status}
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                                    <button style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontWeight: 500 }}>Edit</button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </main>
+            <div className="table-container">
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Email Address</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>Loading users...</td></tr>
+                        ) : users.length === 0 ? (
+                            <tr><td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>No users found in this category.</td></tr>
+                        ) : (
+                            users.map(user => (
+                                <tr key={user.id}>
+                                    <td style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <div className="avatar-sm" style={{ width: '32px', height: '32px', fontSize: '0.8rem' }}>
+                                            {user.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span style={{ fontWeight: 600 }}>{user.name}</span>
+                                    </td>
+                                    <td>{user.email}</td>
+                                    <td>
+                                        <span className="badge badge-gray">{user.role}</span>
+                                    </td>
+                                    <td>
+                                        <span className={`badge ${user.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>
+                                            {user.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button className="icon-btn" title="Edit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
 
-            {/* Add User Modal */}
             {showModal && (
                 <AddUserModal
                     token={token}
@@ -156,36 +133,47 @@ const AddUserModal = ({ token, role, onClose, onSuccess }) => {
     };
 
     return (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-            <div style={{ background: 'white', padding: '2rem', borderRadius: '0.75rem', width: '450px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem', color: '#1e293b' }}>Add New User</h3>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+            <div style={{ background: 'white', padding: '2rem', borderRadius: '1rem', width: '100%', maxWidth: '480px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Add New User</h3>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" width="24" height="24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
-                {error && <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
+                {error && <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1.5rem', fontSize: '0.875rem', fontWeight: 500 }}>{error}</div>}
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: '#475569' }}>Full Name</label>
-                        <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ width: '100%', padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }} />
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Full Name</label>
+                        <input required type="text" placeholder="e.g. John Doe" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', outline: 'none', transition: 'border-color 0.2s' }} />
                     </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: '#475569' }}>Email Address</label>
-                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ width: '100%', padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }} />
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Email Address</label>
+                        <input required type="email" placeholder="john@example.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', outline: 'none' }} />
                     </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: '#475569' }}>Role</label>
-                        <input type="text" value={formData.role} disabled style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.375rem', background: '#f1f5f9', color: '#64748b' }} />
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>User Role</label>
+                        <input type="text" value={formData.role} disabled style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: '#f8fafc', color: '#64748b', fontWeight: 500 }} />
                     </div>
 
-                    <div style={{ marginBottom: '1.5rem', padding: '0.75rem', background: '#eff6ff', borderRadius: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'start' }}>
-                        <span style={{ fontSize: '1.2rem' }}>ℹ️</span>
-                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#2563eb', lineHeight: '1.4' }}>
-                            A temporary password will be auto-generated and sent to the user's email address.
+                    <div style={{ marginBottom: '2rem', padding: '1rem', background: '#eff6ff', borderRadius: '0.75rem', border: '1px solid #dbeafe', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="#3b82f6" width="24" height="24" style={{ flexShrink: 0 }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#1e40af', fontWeight: 500, lineHeight: '1.5' }}>
+                            A temporary password will be auto-generated and sent to the user's email address for their first login.
                         </p>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                        <button type="button" onClick={onClose} style={{ padding: '0.75rem 1rem', border: '1px solid #cbd5e1', background: 'white', borderRadius: '0.375rem', cursor: 'pointer', fontWeight: 500, color: '#475569' }}>Cancel</button>
-                        <button type="submit" disabled={loading} className="btn-primary-sm" style={{ padding: '0.75rem 1.5rem' }}>{loading ? 'Creating...' : 'Create User'}</button>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button type="button" onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: '1px solid #e2e8f0', background: 'white', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 600, color: '#475569' }}>Cancel</button>
+                        <button type="submit" disabled={loading} className="btn-primary-sm" style={{ flex: 1, padding: '0.75rem', fontSize: '0.95rem' }}>
+                            {loading ? 'Creating...' : 'Create User'}
+                        </button>
                     </div>
                 </form>
             </div>

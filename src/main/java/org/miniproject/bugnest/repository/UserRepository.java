@@ -1,6 +1,6 @@
-package org.miniproject.BugNest.repository;
+package org.miniproject.bugnest.repository;
 
-import org.miniproject.BugNest.model.User;
+import org.miniproject.bugnest.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

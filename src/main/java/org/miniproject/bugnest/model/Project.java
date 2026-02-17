@@ -4,13 +4,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "projects")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,25 +20,21 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Column(nullable = false, unique = true)
-    private String email;
+    private String projectKey;
 
-    @Column(nullable = false)
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
+    @ManyToOne
+    @JoinColumn(name = "creator_id", nullable = false)
+    private User creator;
 
     @Column(name = "created_at", updatable = false)
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = java.time.LocalDateTime.now();
+        createdAt = LocalDateTime.now();
     }
 }

@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./Login";
-import { AdminDashboard, ManagerDashboard, DeveloperDashboard, TesterDashboard } from "./Dashboard";
+import { AdminDashboard, ManagerDashboard, DeveloperDashboard, TesterDashboard, DashboardLayout } from "./Dashboard";
 import Settings from "./Settings";
-import Users from "./Users"; // Added import for Users
+import Users from "./Users";
+import Projects from "./pages/Projects";
+import Bugs from "./pages/Bugs";
+import Kanban from "./pages/Kanban";
 import "./index.css";
 import { useContext } from "react";
 import AuthContext from "./context/AuthContext";
@@ -84,8 +87,60 @@ function AppRoutes() {
       <Route
         path="/users"
         element={
-          <ProtectedRoute>
-            <Users />
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <DashboardLayout title="User Management">
+              <Users />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER"]}>
+            <DashboardLayout title="Projects">
+              <Projects />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId/bugs"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+            <DashboardLayout title="Project Bugs">
+              <Bugs />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bugs"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+            <DashboardLayout title="Bugs">
+              <Bugs />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId/kanban"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+            <DashboardLayout title="Project Board">
+              <Kanban />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/kanban"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+            <DashboardLayout title="Kanban Board">
+              <Kanban />
+            </DashboardLayout>
           </ProtectedRoute>
         }
       />

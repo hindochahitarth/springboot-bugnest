@@ -1,9 +1,9 @@
-package org.miniproject.BugNest.config;
+package org.miniproject.bugnest.config;
 
-import org.miniproject.BugNest.model.Role;
-import org.miniproject.BugNest.model.Status;
-import org.miniproject.BugNest.model.User;
-import org.miniproject.BugNest.repository.UserRepository;
+import org.miniproject.bugnest.model.Role;
+import org.miniproject.bugnest.model.Status;
+import org.miniproject.bugnest.model.User;
+import org.miniproject.bugnest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;

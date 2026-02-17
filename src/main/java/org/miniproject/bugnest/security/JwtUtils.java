@@ -1,4 +1,4 @@
-package org.miniproject.BugNest.security;
+package org.miniproject.bugnest.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

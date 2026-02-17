@@ -4,26 +4,26 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "project_members")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class ProjectMember {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -31,13 +31,15 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status;
+    private ProjectMemberStatus status;
 
-    @Column(name = "created_at", updatable = false)
-    private java.time.LocalDateTime createdAt;
+    @Column(name = "joined_at")
+    private LocalDateTime joinedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = java.time.LocalDateTime.now();
+        if (this.status == ProjectMemberStatus.ACCEPTED) {
+            joinedAt = LocalDateTime.now();
+        }
     }
 }

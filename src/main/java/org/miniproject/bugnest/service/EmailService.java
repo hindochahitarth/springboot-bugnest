@@ -1,4 +1,4 @@
-package org.miniproject.BugNest.service;
+package org.miniproject.bugnest.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

@@ -1,9 +1,9 @@
-package org.miniproject.BugNest.controller;
+package org.miniproject.bugnest.controller;
 
-import org.miniproject.BugNest.dto.PasswordChangeRequest;
-import org.miniproject.BugNest.dto.ProfileUpdateRequest;
-import org.miniproject.BugNest.model.User;
-import org.miniproject.BugNest.service.UserService;
+import org.miniproject.bugnest.dto.PasswordChangeRequest;
+import org.miniproject.bugnest.dto.ProfileUpdateRequest;
+import org.miniproject.bugnest.model.User;
+import org.miniproject.bugnest.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -61,14 +61,14 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> getUsersByRole(@RequestParam String role) {
         try {
-            return ResponseEntity.ok(userService.getAllUsersByRole(org.miniproject.BugNest.model.Role.valueOf(role.toUpperCase())));
+            return ResponseEntity.ok(userService.getAllUsersByRole(org.miniproject.bugnest.model.Role.valueOf(role.toUpperCase())));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid role"));
         }
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody org.miniproject.BugNest.dto.UserCreateRequest request) {
+    public ResponseEntity<?> createUser(@RequestBody org.miniproject.bugnest.dto.UserCreateRequest request) {
         try {
             User newUser = userService.createUser(request);
             return ResponseEntity.ok(Map.of("message", "User created successfully", "user", newUser));
