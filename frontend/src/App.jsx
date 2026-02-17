@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Login from "./Login";
+import LandingPage from "./pages/LandingPage";
 import { AdminDashboard, ManagerDashboard, DeveloperDashboard, TesterDashboard, DashboardLayout } from "./Dashboard";
 import Settings from "./Settings";
 import Users from "./Users";
@@ -46,7 +47,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
       <Route
         path="/admin/dashboard"
         element={

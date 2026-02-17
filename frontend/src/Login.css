@@ -153,11 +153,62 @@
   gap: 0.5rem;
 }
 
+/* ... previous styles ... */
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon {
+  position: absolute;
+  left: 0.875rem;
+  width: 20px;
+  height: 20px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.form-input {
+  padding: 0.75rem 1rem 0.75rem 2.75rem !important;
+  /* Extra left padding for icon */
+  font-size: 0.95rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  background-color: #f9fafb;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.875rem;
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.password-toggle:hover {
+  color: var(--primary-color);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
 .login-footer {
   margin-top: 2.5rem;
   text-align: center;
   font-size: 0.8rem;
-  color: #9ca3af;
-  border-top: 1px solid #f3f4f6;
+  color: #94a3b8;
+  border-top: 1px solid #f1f5f9;
   padding-top: 1.5rem;
 }
