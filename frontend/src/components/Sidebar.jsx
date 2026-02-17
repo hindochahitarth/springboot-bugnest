@@ -63,12 +63,12 @@ const Sidebar = () => {
     const role = user?.role || "GUEST";
 
     const allMenuItems = [
-        { label: "Dashboard", path: `/${role.toLowerCase()}/dashboard`, icon: <DashboardIcon />, roles: ["ADMIN", "MANAGER", "DEVELOPER", "TESTER"] },
-        { label: "Projects", path: "/projects", icon: <ProjectsIcon />, roles: ["ADMIN", "MANAGER", "DEVELOPER", "TESTER"] },
-        { label: "Bugs", path: "/bugs", icon: <BugsIcon />, roles: ["ADMIN", "MANAGER", "DEVELOPER", "TESTER"] },
-        { label: "Kanban", path: "/kanban", icon: <KanbanIcon />, roles: ["ADMIN", "MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Dashboard", path: `/${role.toLowerCase()}/dashboard`, icon: <DashboardIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Projects", path: "/projects", icon: <ProjectsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Bugs", path: "/bugs", icon: <BugsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Kanban", path: "/kanban", icon: <KanbanIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Users", path: "/users", icon: <UsersIcon />, roles: ["ADMIN"] },
-        { label: "Settings", path: "/settings", icon: <SettingsIcon />, roles: ["ADMIN", "MANAGER"] },
+        { label: "Settings", path: "/settings", icon: <SettingsIcon />, roles: ["ADMIN", "PROJECT_MANAGER"] },
     ];
 
     const menuItems = allMenuItems.filter(item => item.roles.includes(role));

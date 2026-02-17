@@ -4,7 +4,7 @@ public class UserCreateRequest {
     private String name;
     private String email;
     private String mobile;
-    private String role; // "ADMIN", "MANAGER", "DEVELOPER", "TESTER"
+    private String role; // "ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"
 
     public String getName() {
         return name;

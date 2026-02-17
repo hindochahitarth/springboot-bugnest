@@ -5,6 +5,8 @@
     --sidebar-width: 260px;
     --sidebar-collapsed-width: 80px;
     --navbar-height: 70px;
+
+    /* Light Theme Variables */
     --primary-color: #2563eb;
     --primary-hover: #1d4ed8;
     --primary-light: #eff6ff;
@@ -20,6 +22,24 @@
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
     --info-color: #3b82f6;
+    --navbar-bg: #ffffff;
+    --search-bg: #f1f5f9;
+    --card-hover-shadow: rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme {
+    --bg-color: #0f172a;
+    --sidebar-bg: #1e293b;
+    --sidebar-text: #94a3b8;
+    --sidebar-text-active: #3882f6;
+    --card-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --navbar-bg: #1e293b;
+    --search-bg: #334155;
+    --primary-light: rgba(37, 99, 235, 0.15);
+    --card-hover-shadow: rgba(0, 0, 0, 0.25);
 }
 
 body {
@@ -127,12 +147,12 @@ body {
 }
 
 .nav-item:hover {
-    background-color: #f1f5f9;
+    background-color: var(--search-bg);
     color: var(--text-primary);
 }
 
 .nav-item.active {
-    background-color: #eff6ff;
+    background-color: var(--primary-light);
     color: var(--sidebar-text-active);
     font-weight: 600;
 }
@@ -228,7 +248,7 @@ body {
 
 .top-navbar {
     height: var(--navbar-height);
-    background-color: white;
+    background-color: var(--navbar-bg);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
@@ -258,7 +278,7 @@ body {
 .search-bar {
     display: flex;
     align-items: center;
-    background-color: #f1f5f9;
+    background-color: var(--search-bg);
     border: 1px solid transparent;
     border-radius: 0.5rem;
     padding: 0.6rem 1rem;
@@ -400,7 +420,7 @@ body {
 }
 
 .summary-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 0.75rem;
     border: 1px solid var(--border-color);
     padding: 1.5rem;
@@ -413,8 +433,8 @@ body {
 
 .summary-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-    border-color: #d1d5db;
+    box-shadow: 0 10px 15px -3px var(--card-hover-shadow);
+    border-color: var(--primary-color);
 }
 
 .card-header {
@@ -466,7 +486,7 @@ body {
    Recent Activities Section
    ========================================= */
 .recent-activities-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 0.75rem;
     border: 1px solid var(--border-color);
     padding: 2rem;
@@ -614,7 +634,7 @@ body {
 }
 
 .content-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 0.5rem;
     border: 1px solid var(--border-color);
     padding: 1.5rem;
@@ -641,7 +661,7 @@ body {
 
 /* Action Cards */
 .action-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 0.75rem;
     padding: 1.25rem;
     border: 1px solid var(--border-color);
@@ -795,7 +815,7 @@ body {
    Standardized Table Styles
    ========================================= */
 .table-container {
-    background: white;
+    background: var(--card-bg);
     border-radius: 0.75rem;
     border: 1px solid var(--border-color);
     overflow: hidden;
@@ -809,7 +829,7 @@ body {
 }
 
 .data-table th {
-    background-color: #f8fafc;
+    background-color: var(--search-bg);
     padding: 1rem 1.5rem;
     font-size: 0.75rem;
     font-weight: 600;
@@ -832,7 +852,7 @@ body {
 }
 
 .data-table tr:hover td {
-    background-color: #f8fafc;
+    background-color: var(--search-bg);
 }
 
 /* =========================================
@@ -849,18 +869,18 @@ body {
 }
 
 .badge-success {
-    background-color: #ecfdf5;
-    color: #065f46;
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success-color);
 }
 
 .badge-warning {
-    background-color: #fffbeb;
-    color: #92400e;
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--warning-color);
 }
 
 .badge-danger {
-    background-color: #fef2f2;
-    color: #991b1b;
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger-color);
 }
 
 .badge-info {
@@ -910,7 +930,7 @@ body {
 .kanban-column {
     flex: 1;
     min-width: 280px;
-    background-color: #f8fafc;
+    background-color: var(--search-bg);
     border-radius: 0.75rem;
     display: flex;
     flex-direction: column;
@@ -933,8 +953,8 @@ body {
 }
 
 .column-count {
-    background-color: #e2e8f0;
-    color: #64748b;
+    background-color: var(--border-color);
+    color: var(--text-secondary);
     padding: 0.125rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -950,7 +970,7 @@ body {
 }
 
 .bug-card {
-    background: white;
+    background: var(--card-bg);
     padding: 1rem;
     border-radius: 0.5rem;
     border: 1px solid var(--border-color);
@@ -1005,7 +1025,7 @@ body {
     padding: 0.5rem 0.75rem;
     border-radius: 0.375rem;
     border: 1px solid var(--border-color);
-    background: white;
+    background: var(--card-bg);
     color: var(--text-secondary);
     font-size: 0.875rem;
     font-weight: 500;
@@ -1044,7 +1064,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
 }
 
 .icon-btn.has-notifications {

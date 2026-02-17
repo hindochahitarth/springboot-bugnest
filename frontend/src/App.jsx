@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import Login from "./Login";
 import { AdminDashboard, ManagerDashboard, DeveloperDashboard, TesterDashboard, DashboardLayout } from "./Dashboard";
 import Settings from "./Settings";
@@ -10,6 +11,8 @@ import Kanban from "./pages/Kanban";
 import "./index.css";
 import { useContext } from "react";
 import AuthContext from "./context/AuthContext";
+
+// ... (ProtectedRoute and AppRoutes remain same)
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { token, user, logout } = useContext(AuthContext);
@@ -53,9 +56,9 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/manager/dashboard"
+        path="/project_manager/dashboard"
         element={
-          <ProtectedRoute allowedRoles={["MANAGER"]}>
+          <ProtectedRoute allowedRoles={["PROJECT_MANAGER"]}>
             <ManagerDashboard />
           </ProtectedRoute>
         }
@@ -97,7 +100,7 @@ function AppRoutes() {
       <Route
         path="/projects"
         element={
-          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER"]}>
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER"]}>
             <DashboardLayout title="Projects">
               <Projects />
             </DashboardLayout>
@@ -107,7 +110,7 @@ function AppRoutes() {
       <Route
         path="/projects/:projectId/bugs"
         element={
-          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
             <DashboardLayout title="Project Bugs">
               <Bugs />
             </DashboardLayout>
@@ -117,7 +120,7 @@ function AppRoutes() {
       <Route
         path="/bugs"
         element={
-          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
             <DashboardLayout title="Bugs">
               <Bugs />
             </DashboardLayout>
@@ -127,7 +130,7 @@ function AppRoutes() {
       <Route
         path="/projects/:projectId/kanban"
         element={
-          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
             <DashboardLayout title="Project Board">
               <Kanban />
             </DashboardLayout>
@@ -137,7 +140,7 @@ function AppRoutes() {
       <Route
         path="/kanban"
         element={
-          <ProtectedRoute allowedRoles={["ADMIN", "MANAGER", "DEVELOPER", "TESTER"]}>
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
             <DashboardLayout title="Kanban Board">
               <Kanban />
             </DashboardLayout>
@@ -150,11 +153,13 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 

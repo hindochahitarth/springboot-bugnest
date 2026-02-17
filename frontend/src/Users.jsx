@@ -5,7 +5,7 @@ import './Dashboard.css';
 
 const Users = () => {
     const { token } = useContext(AuthContext);
-    const [activeRole, setActiveRole] = useState('ADMIN');
+    const [activeRole, setActiveRole] = useState('PROJECT_MANAGER');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -33,7 +33,7 @@ const Users = () => {
         <div className="page-container">
             <header className="page-header">
                 <div className="role-tabs" style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: '0.5rem' }}>
-                    {['ADMIN', 'MANAGER', 'DEVELOPER', 'TESTER'].map(role => (
+                    {['PROJECT_MANAGER', 'DEVELOPER', 'TESTER', 'ADMIN'].map(role => (
                         <button
                             key={role}
                             className={`page-btn ${activeRole === role ? 'active' : ''}`}
@@ -44,7 +44,7 @@ const Users = () => {
                                 boxShadow: activeRole === role ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
                             }}
                         >
-                            {role.charAt(0) + role.slice(1).toLowerCase()}s
+                            {role === 'PROJECT_MANAGER' ? 'Project Managers' : role.charAt(0) + role.slice(1).toLowerCase() + 's'}
                         </button>
                     ))}
                 </div>
@@ -155,17 +155,22 @@ const AddUserModal = ({ token, role, onClose, onSuccess }) => {
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Email Address</label>
                         <input required type="email" placeholder="john@example.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', outline: 'none' }} />
                     </div>
-                    <div style={{ marginBottom: '1.25rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>User Role</label>
-                        <input type="text" value={formData.role} disabled style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: '#f8fafc', color: '#64748b', fontWeight: 500 }} />
-                    </div>
+                    <select
+                        value={formData.role}
+                        onChange={e => setFormData({ ...formData, role: e.target.value })}
+                        style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', outline: 'none', background: 'white' }}
+                    >
+                        <option value="PROJECT_MANAGER">Project Manager</option>
+                        <option value="DEVELOPER">Developer</option>
+                        <option value="TESTER">Tester</option>
+                    </select>
 
                     <div style={{ marginBottom: '2rem', padding: '1rem', background: '#eff6ff', borderRadius: '0.75rem', border: '1px solid #dbeafe', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="#3b82f6" width="24" height="24" style={{ flexShrink: 0 }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                         </svg>
                         <p style={{ margin: 0, fontSize: '0.8rem', color: '#1e40af', fontWeight: 500, lineHeight: '1.5' }}>
-                            A temporary password will be auto-generated and sent to the user's email address for their first login.
+                            Default password: <b>(username-lowercase)123</b>. New users can change it after their first login.
                         </p>
                     </div>
 

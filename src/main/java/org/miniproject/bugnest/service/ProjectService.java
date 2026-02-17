@@ -37,7 +37,7 @@ public class ProjectService {
         ProjectMember member = new ProjectMember();
         member.setProject(savedProject);
         member.setUser(creator);
-        member.setRole(Role.MANAGER);
+        member.setRole(Role.PROJECT_MANAGER);
         member.setStatus(ProjectMemberStatus.ACCEPTED);
         member.setJoinedAt(LocalDateTime.now());
         memberRepository.save(member);

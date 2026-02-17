@@ -24,7 +24,7 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         if (userRepository.count() == 0) {
             createUser("Admin User", "admin@bugnest.com", "admin123", Role.ADMIN);
-            createUser("Manager User", "manager@bugnest.com", "manager123", Role.MANAGER);
+            createUser("Manager User", "manager@bugnest.com", "manager123", Role.PROJECT_MANAGER);
             createUser("Developer User", "developer@bugnest.com", "developer123", Role.DEVELOPER);
             createUser("Tester User", "tester@bugnest.com", "tester123", Role.TESTER);
         }

@@ -15,7 +15,7 @@ const Login = () => {
         if (user) {
             const role = user.role;
             if (role === "ADMIN") navigate("/admin/dashboard");
-            else if (role === "MANAGER") navigate("/manager/dashboard");
+            else if (role === "PROJECT_MANAGER") navigate("/project_manager/dashboard");
             else if (role === "DEVELOPER") navigate("/developer/dashboard");
             else if (role === "TESTER") navigate("/tester/dashboard");
         }

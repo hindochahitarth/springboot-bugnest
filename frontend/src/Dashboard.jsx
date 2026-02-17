@@ -151,58 +151,17 @@ const TeamMemberRow = ({ name, role, bugs }) => (
 
 export const ManagerDashboard = () => (
     <DashboardLayout title="Manager Dashboard">
-        {/* Quick Actions Grid */}
         <div className="dashboard-grid">
-            <ActionCard
-                title="Project List"
-                desc="View and manage all projects"
-                icon={<DocumentIcon />}
-            />
-            <ActionCard
-                title="Sprint Board"
-                desc="Kanban view of current sprint"
-                icon={<KanbanIcon />}
-            />
-            <ActionCard
-                title="Assign Bugs"
-                desc="Assign bugs to team members"
-                icon={<UserGroupIcon />}
-            />
-            <ActionCard
-                title="Reports & Analytics"
-                desc="Charts and performance metrics"
-                icon={<ChartBarIcon />}
-            />
+            <SummaryCard title="Active Projects" value="8" icon={<RocketIcon />} />
+            <SummaryCard title="Pending Bugs" value="14" icon={<ClockIcon />} />
+            <SummaryCard title="Bugs Resolved" value="32" icon={<CheckIcon />} />
         </div>
 
-        <div className="dashboard-split">
-            {/* Active Projects */}
-            <div className="content-card">
-                <div className="card-header-row">
-                    <h3 className="section-title">Active Projects</h3>
-                    <a href="#" className="view-all-link">View all ↗</a>
-                </div>
-                <div className="projects-list">
-                    <ProjectRow name="Frontend Redesign" members={4} progress={73} />
-                    <ProjectRow name="API Gateway v2" members={3} progress={60} />
-                    <ProjectRow name="Mobile App" members={3} progress={36} />
-                    <ProjectRow name="Analytics Dashboard" members={2} progress={86} />
-                </div>
-            </div>
-
-            {/* Team Workload */}
-            <div className="content-card">
-                <div className="card-header-row">
-                    <h3 className="section-title">Team Workload</h3>
-                    <a href="#" className="view-all-link">Assign ↗</a>
-                </div>
-                <div className="team-list">
-                    <TeamMemberRow name="Alex Rivera" role="Developer" bugs={3} />
-                    <TeamMemberRow name="Marcus Lin" role="Developer" bugs={2} />
-                    <TeamMemberRow name="Priya Sharma" role="Tester" bugs={0} />
-                    <TeamMemberRow name="Elena Volkov" role="Developer" bugs={2} />
-                    <TeamMemberRow name="David Kim" role="Tester" bugs={0} />
-                </div>
+        <div className="recent-activities-card">
+            <h3 className="section-title">Recent Activities</h3>
+            <div className="empty-state">
+                <p>No recent project activities found.</p>
+                <button className="btn-secondary">View All Logs</button>
             </div>
         </div>
     </DashboardLayout>

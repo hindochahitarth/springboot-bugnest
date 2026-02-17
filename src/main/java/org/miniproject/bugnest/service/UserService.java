@@ -69,41 +69,14 @@ public class UserService {
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        // Mobile number handling would go here if User entity had it, for now skipping or adding to logic
         
         user.setRole(org.miniproject.bugnest.model.Role.valueOf(request.getRole().toUpperCase()));
         user.setStatus(org.miniproject.bugnest.model.Status.ACTIVE);
 
-        // Auto-generate password
-        String tempPassword = generateRandomPassword();
-        user.setPassword(passwordEncoder.encode(tempPassword));
+        // Set default password: (name-lowercase-nospaces)123
+        String defaultPassword = request.getName().toLowerCase().replaceAll("\\s+", "") + "123";
+        user.setPassword(passwordEncoder.encode(defaultPassword));
 
-        User savedUser = userRepository.save(user);
-
-        // Send Email Notification
-        String subject = "Welcome to BugNest - Your Account Details";
-        String body = "Hello " + user.getName() + ",\n\n" +
-                "Your account has been created successfully.\n" +
-                "Here are your login details:\n\n" +
-                "Email: " + user.getEmail() + "\n" +
-                "Temporary Password: " + tempPassword + "\n\n" +
-                "Please log in at: http://localhost:5173/login\n" +
-                "We recommend changing your password after logging in.\n\n" +
-                "Best regards,\n" +
-                "The BugNest Team";
-        
-        emailService.sendEmail(user.getEmail(), subject, body);
-
-        return savedUser;
-    }
-
-    private String generateRandomPassword() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
-        StringBuilder sb = new StringBuilder();
-        java.util.Random random = new java.util.Random();
-        for (int i = 0; i < 10; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return sb.toString();
+        return userRepository.save(user);
     }
 }

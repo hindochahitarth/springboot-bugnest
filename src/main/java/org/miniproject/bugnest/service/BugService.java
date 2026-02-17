@@ -85,7 +85,7 @@ public class BugService {
         BugStatus newStatus = BugStatus.valueOf(status.toUpperCase());
         
         // Role-based Status Update Rules
-        if (user.getRole() == Role.ADMIN || user.getRole() == Role.MANAGER) {
+        if (user.getRole() == Role.ADMIN || user.getRole() == Role.PROJECT_MANAGER) {
             bug.setStatus(newStatus);
         } else if (user.getRole() == Role.DEVELOPER) {
             if (newStatus == BugStatus.IN_PROGRESS || newStatus == BugStatus.REVIEW) {
@@ -109,7 +109,7 @@ public class BugService {
         Bug bug = bugRepository.findById(bugId)
                 .orElseThrow(() -> new RuntimeException("Bug not found"));
 
-        if (manager.getRole() != Role.ADMIN && manager.getRole() != Role.MANAGER) {
+        if (manager.getRole() != Role.ADMIN && manager.getRole() != Role.PROJECT_MANAGER) {
             throw new RuntimeException("Only Admins and Managers can assign bugs");
         }
 

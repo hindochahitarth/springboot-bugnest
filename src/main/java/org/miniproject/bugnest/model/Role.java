@@ -2,7 +2,7 @@ package org.miniproject.bugnest.model;
 
 public enum Role {
     ADMIN,
-    MANAGER,
+    PROJECT_MANAGER,
     DEVELOPER,
     TESTER
 }
