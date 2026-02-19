@@ -68,45 +68,58 @@ const Projects = () => {
                     <thead>
                         <tr>
                             <th>Project Name</th>
-                            <th>Project Key</th>
+                            <th>Key</th>
+                            <th>Owner</th>
                             <th>Members</th>
-                            <th>Creator</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Loading projects...</td></tr>
+                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Loading projects...</td></tr>
                         ) : filteredProjects.length === 0 ? (
-                            <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>No projects found.</td></tr>
+                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>No projects found.</td></tr>
                         ) : (
                             filteredProjects.map(project => (
                                 <tr key={project.id}>
-                                    <td style={{ fontWeight: '600' }}>{project.name}</td>
+                                    <td style={{ fontWeight: 600, color: '#0f172a' }}>{project.name}</td>
                                     <td><code style={{ background: '#f1f5f9', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{project.projectKey}</code></td>
-                                    <td>{project.memberCount}</td>
-                                    <td>{project.creatorName}</td>
                                     <td>
-                                        <div className="header-actions" style={{ marginBottom: 0, gap: '0.5rem' }}>
-                                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                                                <button
-                                                    className="page-btn active"
-                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
-                                                    onClick={() => { setSelectedProject(project); setShowMemberModal(true); }}
-                                                >
-                                                    Manage
-                                                </button>
-                                            )}
-                                            <button
-                                                className="icon-btn"
-                                                title="View Project Bugs"
-                                                onClick={() => navigate(`/projects/${project.id}/bugs`)}
-                                            >
+                                        <div className="owner-cell">
+                                            <div className="avatar-xs">{project.creatorName.charAt(0)}</div>
+                                            <span>{project.creatorName} {project.creatorName === user?.name ? '(You)' : ''}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className="members-count">
+                                            {project.memberCount} Members
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`status-pill ${project.status?.toLowerCase() || 'active'}`}>
+                                            {project.status || 'ACTIVE'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="project-actions">
+                                            <button className="icon-btn" title="View Board" onClick={() => navigate(`/projects/${project.id}/kanban`)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z" />
                                                 </svg>
                                             </button>
+                                            <button className="icon-btn" title="View Bugs" onClick={() => navigate(`/projects/${project.id}/bugs`)}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                                </svg>
+                                            </button>
+                                            {(user?.role === 'ADMIN' || project.creatorName === user?.name) && (
+                                                <button className="icon-btn primary" title="Manage Team" onClick={() => navigate(`/projects/${project.id}/members`)}>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.971 5.971 0 00-.942 3.197M12 10.5a3.375 3.375 0 100-6.75 3.375 3.375 0 000 6.75zM9 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM15 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                                                    </svg>
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -136,7 +149,7 @@ const Projects = () => {
 };
 
 const CreateProjectModal = ({ token, onClose, onSuccess }) => {
-    const [formData, setFormData] = useState({ name: '', description: '', projectKey: '' });
+    const [formData, setFormData] = useState({ name: '', description: '', projectKey: '', status: 'ACTIVE' });
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {

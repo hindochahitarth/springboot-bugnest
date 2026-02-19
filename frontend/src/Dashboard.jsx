@@ -150,7 +150,7 @@ const TeamMemberRow = ({ name, role, bugs }) => (
 );
 
 export const ManagerDashboard = () => (
-    <DashboardLayout title="Manager Dashboard">
+    <DashboardLayout title="Project Manager Dashboard">
         <div className="dashboard-grid">
             <SummaryCard title="Active Projects" value="8" icon={<RocketIcon />} />
             <SummaryCard title="Pending Bugs" value="14" icon={<ClockIcon />} />

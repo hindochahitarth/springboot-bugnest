@@ -49,7 +49,8 @@ public class ProjectController {
     @PostMapping("/{id}/invite")
     public ResponseEntity<?> inviteMember(@PathVariable Long id, @RequestBody ProjectInviteRequest request) {
         try {
-            projectService.inviteMember(id, request);
+            User inviter = getCurrentUser();
+            projectService.inviteMember(id, request, inviter);
             return ResponseEntity.ok(Map.of("message", "Invitation sent successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -69,6 +70,17 @@ public class ProjectController {
             ProjectMemberStatus memberStatus = ProjectMemberStatus.valueOf(status.toUpperCase());
             projectService.respondToInvite(inviteId, memberStatus, user);
             return ResponseEntity.ok(Map.of("message", "Invite " + status.toLowerCase() + "ed successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}/members/{memberId}")
+    public ResponseEntity<?> removeMember(@PathVariable Long id, @PathVariable Long memberId) {
+        try {
+            User actor = getCurrentUser();
+            projectService.removeMember(id, memberId, actor);
+            return ResponseEntity.ok(Map.of("message", "Member removed successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

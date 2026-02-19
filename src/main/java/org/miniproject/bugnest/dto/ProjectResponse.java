@@ -14,5 +14,6 @@ public class ProjectResponse {
     private String creatorName;
     private long memberCount;
     private String userStatus; // PENDING, ACCEPTED, etc. for the requesting user
+    private String status;     // Project status: ACTIVE, ARCHIVED, etc.
     private LocalDateTime createdAt;
 }

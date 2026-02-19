@@ -22,8 +22,21 @@ public class ProjectMember {
     private Project project;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true) // Nullable for unregistered users
     private User user;
+
+    @Column(name = "invited_email")
+    private String invitedEmail;
+
+    @ManyToOne
+    @JoinColumn(name = "invited_by")
+    private User invitedBy;
+
+    @Column(name = "invited_at")
+    private LocalDateTime invitedAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String message;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -36,10 +49,16 @@ public class ProjectMember {
     @Column(name = "joined_at")
     private LocalDateTime joinedAt;
 
+    @Column(name = "is_project_owner")
+    private boolean isProjectOwner = false;
+
     @PrePersist
     protected void onCreate() {
         if (this.status == ProjectMemberStatus.ACCEPTED) {
-            joinedAt = LocalDateTime.now();
+            this.joinedAt = LocalDateTime.now();
+        }
+        if (this.invitedAt == null) {
+            this.invitedAt = LocalDateTime.now();
         }
     }
 }

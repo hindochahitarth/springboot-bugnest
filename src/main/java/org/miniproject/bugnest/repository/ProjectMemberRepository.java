@@ -14,6 +14,8 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     List<ProjectMember> findByUserAndStatus(User user, ProjectMemberStatus status);
     List<ProjectMember> findByProject(Project project);
     Optional<ProjectMember> findByProjectAndUser(Project project, User user);
+    Optional<ProjectMember> findByProjectAndInvitedEmail(Project project, String invitedEmail);
+    List<ProjectMember> findByInvitedEmailAndStatus(String invitedEmail, ProjectMemberStatus status);
     
     // Check if user is an accepted member
     boolean existsByProjectAndUserAndStatus(Project project, User user, ProjectMemberStatus status);

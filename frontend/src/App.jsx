@@ -3,6 +3,9 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Login from "./Login";
 import LandingPage from "./pages/LandingPage";
+import Register from "./pages/Register";
+import ManageMembers from "./pages/ManageMembers";
+import Invitations from "./pages/Invitations";
 import { AdminDashboard, ManagerDashboard, DeveloperDashboard, TesterDashboard, DashboardLayout } from "./Dashboard";
 import Settings from "./Settings";
 import Users from "./Users";
@@ -49,6 +52,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         path="/admin/dashboard"
         element={
@@ -145,6 +149,26 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
             <DashboardLayout title="Kanban Board">
               <Kanban />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/invites"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout title="Invitations">
+              <Invitations />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId/members"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER"]}>
+            <DashboardLayout title="Manage Members">
+              <ManageMembers />
             </DashboardLayout>
           </ProtectedRoute>
         }

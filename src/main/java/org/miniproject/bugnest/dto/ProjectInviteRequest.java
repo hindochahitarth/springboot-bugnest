@@ -6,4 +6,5 @@ import lombok.Data;
 public class ProjectInviteRequest {
     private String userEmail;
     private String role;
+    private String message;
 }

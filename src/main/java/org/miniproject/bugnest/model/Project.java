@@ -33,8 +33,12 @@ public class Project {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "status")
+    private String status = "ACTIVE";
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (this.status == null) this.status = "ACTIVE";
     }
 }

@@ -12,4 +12,5 @@ public class ProjectMemberResponse {
     private String userEmail;
     private String role;
     private String status;
+    private boolean isProjectOwner;
 }

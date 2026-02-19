@@ -77,6 +77,42 @@ public class UserService {
         String defaultPassword = request.getName().toLowerCase().replaceAll("\\s+", "") + "123";
         user.setPassword(passwordEncoder.encode(defaultPassword));
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Auto-attach to pending projects
+        autoAttachToProjects(savedUser);
+
+        return savedUser;
+    }
+
+    @Autowired
+    private org.miniproject.bugnest.repository.ProjectMemberRepository projectMemberRepository;
+
+    private void autoAttachToProjects(User user) {
+        java.util.List<org.miniproject.bugnest.model.ProjectMember> pendingInvites = 
+            projectMemberRepository.findByInvitedEmailAndStatus(user.getEmail(), org.miniproject.bugnest.model.ProjectMemberStatus.PENDING);
+        
+        for (org.miniproject.bugnest.model.ProjectMember member : pendingInvites) {
+            member.setUser(user);
+            member.setStatus(org.miniproject.bugnest.model.ProjectMemberStatus.ACCEPTED);
+            member.setJoinedAt(java.time.LocalDateTime.now());
+            projectMemberRepository.save(member);
+        }
+    }
+    public User registerPublicUser(org.miniproject.bugnest.dto.RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email is already in use!");
+        }
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(org.miniproject.bugnest.model.Role.DEVELOPER); // Default
+        user.setStatus(org.miniproject.bugnest.model.Status.ACTIVE);
+
+        User savedUser = userRepository.save(user);
+        autoAttachToProjects(savedUser);
+        return savedUser;
     }
 }

@@ -51,4 +51,17 @@ public class AuthController {
 
         return ResponseEntity.ok(new AuthResponse(jwt, role));
     }
+
+    @Autowired
+    private org.miniproject.bugnest.service.UserService userService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody org.miniproject.bugnest.dto.RegisterRequest registerRequest) {
+        try {
+            org.miniproject.bugnest.model.User user = userService.registerPublicUser(registerRequest);
+            return ResponseEntity.ok(java.util.Map.of("message", "User registered successfully", "user", user));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }
