@@ -37,7 +37,7 @@ const Projects = () => {
         p.projectKey.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const canCreate = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+    const canCreate = user?.role === 'ADMIN' || user?.role === 'PROJECT_MANAGER';
 
     return (
         <div className="page-container">
@@ -105,16 +105,16 @@ const Projects = () => {
                                         <div className="project-actions">
                                             <button className="icon-btn" title="View Board" onClick={() => navigate(`/projects/${project.id}/kanban`)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621a3 3 0 01-.879-2.122v-1.007M9.75 21h4.5M3 13.5h18M5.25 4.5h13.5a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25H5.25a2.25 2.25 0 01-2.25-2.25v-9a2.25 2.25 0 012.25-2.25z" />
                                                 </svg>
                                             </button>
                                             <button className="icon-btn" title="View Bugs" onClick={() => navigate(`/projects/${project.id}/bugs`)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                                                 </svg>
                                             </button>
-                                            {(user?.role === 'ADMIN' || project.creatorName === user?.name) && (
-                                                <button className="icon-btn primary" title="Manage Team" onClick={() => navigate(`/projects/${project.id}/members`)}>
+                                            {(user?.role === 'ADMIN' || (user?.role === 'PROJECT_MANAGER' && project.userStatus === 'ACCEPTED')) && (
+                                                <button className="icon-btn primary" title="Manage Team" onClick={() => { setSelectedProject(project); setShowMemberModal(true); }}>
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.971 5.971 0 00-.942 3.197M12 10.5a3.375 3.375 0 100-6.75 3.375 3.375 0 000 6.75zM9 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM15 18.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                                                     </svg>
@@ -174,15 +174,15 @@ const CreateProjectModal = ({ token, onClose, onSuccess }) => {
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '1rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Project Name</label>
-                        <input required type="text" className="form-input" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                        <input required type="text" className="modal-input" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', boxSizing: 'border-box' }} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                     </div>
                     <div style={{ marginBottom: '1rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Project Key (Short Name)</label>
-                        <input required type="text" maxLength="5" placeholder="e.g. BNF" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.projectKey} onChange={e => setFormData({ ...formData, projectKey: e.target.value.toUpperCase() })} />
+                        <input required type="text" className="modal-input" maxLength="5" placeholder="e.g. BNF" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', boxSizing: 'border-box' }} value={formData.projectKey} onChange={e => setFormData({ ...formData, projectKey: e.target.value.toUpperCase() })} />
                     </div>
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Description</label>
-                        <textarea className="form-input" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', minHeight: '100px' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                        <textarea className="modal-input" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', minHeight: '100px', boxSizing: 'border-box', resize: 'vertical' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                     </div>
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <button type="button" onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: 'white' }}>Cancel</button>
@@ -197,13 +197,38 @@ const CreateProjectModal = ({ token, onClose, onSuccess }) => {
 };
 
 const ManageMembersModal = ({ token, project, onClose }) => {
+    const { user } = useContext(AuthContext);
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [availableUsers, setAvailableUsers] = useState([]);
     const [inviteData, setInviteData] = useState({ userEmail: '', role: 'DEVELOPER' });
 
     useEffect(() => {
         fetchMembers();
     }, [project.id]);
+
+    useEffect(() => {
+        fetchAvailableUsers();
+    }, [project.id, inviteData.role]);
+
+    const fetchAvailableUsers = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/projects/${project.id}/available-users?role=${inviteData.role}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAvailableUsers(response.data);
+            console.log(`Available ${inviteData.role}s:`, response.data);
+            // Auto-select first user if available
+            if (response.data.length > 0) {
+                setInviteData(prev => ({ ...prev, userEmail: response.data[0].email }));
+            } else {
+                setInviteData(prev => ({ ...prev, userEmail: '' }));
+            }
+        } catch (error) {
+            console.error("Error fetching available users:", error);
+            alert("Error fetching available users. Check console.");
+        }
+    };
 
     const fetchMembers = async () => {
         try {
@@ -224,8 +249,9 @@ const ManageMembersModal = ({ token, project, onClose }) => {
             await axios.post(`http://localhost:8080/api/projects/${project.id}/invite`, inviteData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setInviteData({ userEmail: '', role: 'DEVELOPER' });
+            setInviteData(prev => ({ ...prev, userEmail: '' }));
             fetchMembers();
+            fetchAvailableUsers();
             alert("Invitation sent!");
         } catch (error) {
             alert(error.response?.data?.error || "Failed to invite user");
@@ -243,13 +269,23 @@ const ManageMembersModal = ({ token, project, onClose }) => {
                 <div style={{ marginBottom: '2rem', background: '#f8fafc', padding: '1rem', borderRadius: '0.75rem' }}>
                     <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem', color: '#475569' }}>INVITE NEW MEMBER</h4>
                     <form onSubmit={handleInvite} style={{ display: 'flex', gap: '0.75rem' }}>
-                        <input required type="email" placeholder="User email" style={{ flex: 1, padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={inviteData.userEmail} onChange={e => setInviteData({ ...inviteData, userEmail: e.target.value })} />
+                        <select
+                            required
+                            style={{ flex: 1, padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }}
+                            value={inviteData.userEmail}
+                            onChange={e => setInviteData({ ...inviteData, userEmail: e.target.value })}
+                        >
+                            <option value="">{availableUsers.length > 0 ? 'Select User' : `No available ${inviteData.role.toLowerCase()}s`}</option>
+                            {availableUsers.map(u => (
+                                <option key={u.email} value={u.email}>{u.name} ({u.email})</option>
+                            ))}
+                        </select>
                         <select style={{ padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={inviteData.role} onChange={e => setInviteData({ ...inviteData, role: e.target.value })}>
                             <option value="DEVELOPER">Developer</option>
                             <option value="TESTER">Tester</option>
-                            <option value="MANAGER">Manager</option>
+                            {user?.role === 'ADMIN' && <option value="PROJECT_MANAGER">Manager</option>}
                         </select>
-                        <button type="submit" className="btn-primary-sm" style={{ padding: '0.6rem 1rem' }}>Invite</button>
+                        <button type="submit" disabled={!inviteData.userEmail} className="btn-primary-sm" style={{ padding: '0.6rem 1rem' }}>Invite</button>
                     </form>
                 </div>
 

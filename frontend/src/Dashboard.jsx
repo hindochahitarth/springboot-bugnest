@@ -1,4 +1,5 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AuthContext from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
 import TopNavbar from "./components/TopNavbar";
@@ -88,24 +89,43 @@ const SummaryCard = ({ title, value, icon, colorClass = "" }) => (
     </div>
 );
 
-export const AdminDashboard = () => (
-    <DashboardLayout title="Admin Dashboard">
-        <div className="dashboard-grid">
-            <SummaryCard title="Total Users" value="24" icon={<UsersIcon />} />
-            <SummaryCard title="Active Projects" value="8" icon={<RocketIcon />} />
-            <SummaryCard title="Pending Requests" value="3" icon={<ClockIcon />} />
-            <SummaryCard title="System Health" value="98%" icon={<HeartIcon />} colorClass="card-health" />
-        </div>
+export const AdminDashboard = () => {
+    const { token } = useContext(AuthContext);
+    const [stats, setStats] = useState(null);
 
-        <div className="recent-activities-card">
-            <h3 className="section-title">Recent Activities</h3>
-            <div className="empty-state">
-                <p>No recent system activities found.</p>
-                <button className="btn-secondary">View All Logs</button>
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setStats(res.data);
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+            }
+        };
+        fetchStats();
+    }, [token]);
+
+    return (
+        <DashboardLayout title="System Administration">
+            <div className="dashboard-grid">
+                <SummaryCard title="Total Users" value="24" icon={<UsersIcon />} />
+                <SummaryCard title="Active Projects" value={stats?.totalProjects || "0"} icon={<RocketIcon />} />
+                <SummaryCard title="Pending Requests" value={stats?.pendingInvites || "0"} icon={<ClockIcon />} />
+                <SummaryCard title="System Health" value="Optimal" icon={<HeartIcon />} colorClass="card-health" />
             </div>
-        </div>
-    </DashboardLayout>
-);
+
+            <div className="recent-activities-card">
+                <h3 className="section-title">Recent Activities</h3>
+                <div className="empty-state">
+                    <p>No recent system activities found.</p>
+                    <button className="btn-secondary">View All Logs</button>
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+};
 
 // --- Manager Dashboard Components ---
 
@@ -149,43 +169,135 @@ const TeamMemberRow = ({ name, role, bugs }) => (
     </div>
 );
 
-export const ManagerDashboard = () => (
-    <DashboardLayout title="Project Manager Dashboard">
-        <div className="dashboard-grid">
-            <SummaryCard title="Active Projects" value="8" icon={<RocketIcon />} />
-            <SummaryCard title="Pending Bugs" value="14" icon={<ClockIcon />} />
-            <SummaryCard title="Bugs Resolved" value="32" icon={<CheckIcon />} />
-        </div>
+export const ManagerDashboard = () => {
+    const { token } = useContext(AuthContext);
+    const [stats, setStats] = useState(null);
 
-        <div className="recent-activities-card">
-            <h3 className="section-title">Recent Activities</h3>
-            <div className="empty-state">
-                <p>No recent project activities found.</p>
-                <button className="btn-secondary">View All Logs</button>
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setStats(res.data);
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+            }
+        };
+        fetchStats();
+    }, [token]);
+
+    return (
+        <DashboardLayout title="Manager Dashboard">
+            <div className="dashboard-grid">
+                <SummaryCard title="Active Projects" value={stats?.totalProjects || "0"} icon={<RocketIcon />} />
+                <SummaryCard title="Total Bugs" value={stats?.openBugs || "0"} icon={<ChartBarIcon />} />
+                <SummaryCard title="Resolved" value={stats?.resolvedBugs || "0"} icon={<CheckIcon />} />
+                <SummaryCard title="Invites" value={stats?.pendingInvites || "0"} icon={<ClockIcon />} />
             </div>
-        </div>
-    </DashboardLayout>
-);
 
-export const DeveloperDashboard = () => (
-    <DashboardLayout title="Developer Dashboard">
-        <div className="dashboard-grid">
-            <SummaryCard title="Assigned Bugs" value="5" icon={<PinIcon />} />
-            <SummaryCard title="Resolved Today" value="2" icon={<CheckIcon />} />
-            <SummaryCard title="Pending Review" value="1" icon={<DocumentIcon />} />
-        </div>
-    </DashboardLayout>
-);
+            <div className="recent-activities-card" style={{ marginTop: '2rem' }}>
+                <h3 className="section-title">Quick Actions</h3>
+                <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', marginTop: '1rem' }}>
+                    <div onClick={() => window.location.href = '/projects'} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="Manage Projects" desc="Create new projects or manage team memberships." icon={<RocketIcon />} />
+                    </div>
+                    <div onClick={() => window.location.href = '/bugs'} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="View All Bugs" desc="Track bugs across all your projects in a single view." icon={<ChartBarIcon />} />
+                    </div>
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+};
+export const DeveloperDashboard = () => {
+    const navigate = useNavigate();
+    const { token } = useContext(AuthContext);
+    const [stats, setStats] = useState(null);
 
-export const TesterDashboard = () => (
-    <DashboardLayout title="Tester Dashboard">
-        <div className="dashboard-grid">
-            <SummaryCard title="Bugs Reported" value="12" icon={<ChartBarIcon />} />
-            <SummaryCard title="Verified Fixes" value="8" icon={<CheckIcon />} />
-            <SummaryCard title="Open for Retest" value="4" icon={<ClockIcon />} />
-        </div>
-    </DashboardLayout>
-);
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setStats(res.data);
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+            }
+        };
+        fetchStats();
+    }, [token]);
+
+    return (
+        <DashboardLayout title="Developer Dashboard">
+            <div className="dashboard-grid">
+                <SummaryCard title="My Projects" value={stats?.totalProjects || "0"} icon={<RocketIcon />} />
+                <SummaryCard title="Assigned Bugs" value={stats?.assignedBugs || "0"} icon={<PinIcon />} />
+                <SummaryCard title="Pending Invites" value={stats?.pendingInvites || "0"} icon={<ClockIcon />} colorClass="card-invite" />
+                <SummaryCard title="Open Bugs" value={stats?.openBugs || "0"} icon={<ChartBarIcon />} />
+            </div>
+
+            <div className="recent-activities-card" style={{ marginTop: '2rem' }}>
+                <h3 className="section-title">Quick Actions</h3>
+                <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', marginTop: '1rem' }}>
+                    <div onClick={() => navigate('/invites')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="Check Invitations" desc="You have new project invites waiting for your response." icon={<ClockIcon />} />
+                    </div>
+                    <div onClick={() => navigate('/projects')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="My Projects" desc="View and manage bugs for the projects you are part of." icon={<RocketIcon />} />
+                    </div>
+                    <div onClick={() => navigate('/bugs')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="Report Bug" desc="Found a new bug? Report it here across any project." icon={<ChartBarIcon />} />
+                    </div>
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+};
+
+export const TesterDashboard = () => {
+    const navigate = useNavigate();
+    const { token } = useContext(AuthContext);
+    const [stats, setStats] = useState(null);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setStats(res.data);
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+            }
+        };
+        fetchStats();
+    }, [token]);
+
+    return (
+        <DashboardLayout title="Tester Dashboard">
+            <div className="dashboard-grid">
+                <SummaryCard title="Total Projects" value={stats?.totalProjects || "0"} icon={<RocketIcon />} />
+                <SummaryCard title="My Reports" value={stats?.assignedBugs || "0"} icon={<ChartBarIcon />} />
+                <SummaryCard title="Open Bugs" value={stats?.openBugs || "0"} icon={<ClockIcon />} />
+                <SummaryCard title="Invites" value={stats?.pendingInvites || "0"} icon={<ClockIcon />} colorClass="card-invite" />
+            </div>
+
+            <div className="recent-activities-card" style={{ marginTop: '2rem' }}>
+                <h3 className="section-title">Quick Actions</h3>
+                <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', marginTop: '1rem' }}>
+                    <div onClick={() => navigate('/invites')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="Review Invites" desc="Respond to new project invitations to start testing." icon={<ClockIcon />} />
+                    </div>
+                    <div onClick={() => navigate('/bugs')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="Report Bug" desc="Found a new bug? Report it here across any project." icon={<ChartBarIcon />} />
+                    </div>
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+};
 
 // KanbanIcon for reuse in Quick Actions
 const KanbanIcon = () => (

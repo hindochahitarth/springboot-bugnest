@@ -106,7 +106,7 @@ function AppRoutes() {
       <Route
         path="/projects"
         element={
-          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER"]}>
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
             <DashboardLayout title="Projects">
               <Projects />
             </DashboardLayout>

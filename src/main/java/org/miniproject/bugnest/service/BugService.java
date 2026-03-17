@@ -26,17 +26,59 @@ public class BugService {
     @Autowired
     private org.miniproject.bugnest.repository.UserRepository userRepository;
 
-    public List<org.miniproject.bugnest.dto.BugResponse> getBugsByProject(Long projectId, User user) {
-        org.miniproject.bugnest.model.Project project = projectRepository.findById(projectId)
+    public List<BugResponse> getBugsByProject(Long projectId, User user) {
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
         // Security Check: Only members or Admin can view
-        if (user.getRole() != org.miniproject.bugnest.model.Role.ADMIN &&
-            !memberRepository.existsByProjectAndUserAndStatus(project, user, org.miniproject.bugnest.model.ProjectMemberStatus.ACCEPTED)) {
+        if (user.getRole() != Role.ADMIN &&
+            !memberRepository.existsByProjectAndUserAndStatus(project, user, ProjectMemberStatus.ACCEPTED)) {
             throw new RuntimeException("Access denied: You are not a member of this project");
         }
 
-        return bugRepository.findByProject(project).stream()
+        List<Bug> bugs = bugRepository.findByProject(project);
+
+        // Visibility Rule: Developers and Testers only see bugs assigned to them
+        if (user.getRole() == Role.DEVELOPER || user.getRole() == Role.TESTER) {
+            bugs = bugs.stream()
+                    .filter(b -> b.getAssignee() != null && b.getAssignee().getId().equals(user.getId()))
+                    .collect(Collectors.toList());
+        }
+
+        return bugs.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<BugResponse> getAllBugsForUser(User user) {
+        List<Project> projects;
+        
+        if (user.getRole() == Role.ADMIN) {
+            return bugRepository.findAll().stream()
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
+        }
+
+        // For non-admins, get projects where they are accepted members
+        projects = memberRepository.findByUserAndStatus(user, ProjectMemberStatus.ACCEPTED)
+                .stream()
+                .map(ProjectMember::getProject)
+                .collect(Collectors.toList());
+
+        if (projects.isEmpty()) {
+            return List.of();
+        }
+
+        List<Bug> bugs = bugRepository.findByProjectIn(projects);
+
+        // Visibility Rule: Developers and Testers only see bugs assigned to them
+        if (user.getRole() == Role.DEVELOPER || user.getRole() == Role.TESTER) {
+            bugs = bugs.stream()
+                    .filter(b -> b.getAssignee() != null && b.getAssignee().getId().equals(user.getId()))
+                    .collect(Collectors.toList());
+        }
+
+        return bugs.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -59,7 +101,7 @@ public class BugService {
         bug.setProject(project);
         bug.setCreator(creator);
 
-        if (request.getAssigneeId() != null) {
+        if (request.getAssigneeId() != null && request.getAssigneeId() > 0) {
             User assignee = userRepository.findById(request.getAssigneeId())
                     .orElseThrow(() -> new RuntimeException("Assignee not found"));
             
@@ -124,6 +166,41 @@ public class BugService {
         bugRepository.save(bug);
     }
 
+    @Transactional
+    public void updateBug(Long bugId, BugCreateRequest request, User user) {
+        Bug bug = bugRepository.findById(bugId)
+                .orElseThrow(() -> new RuntimeException("Bug not found"));
+
+        // Only Admin, Project Manager or Creator can edit
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isProjectManager = user.getRole() == Role.PROJECT_MANAGER && 
+                memberRepository.existsByProjectAndUserAndStatus(bug.getProject(), user, ProjectMemberStatus.ACCEPTED);
+        boolean isCreator = bug.getCreator().getId().equals(user.getId());
+
+        if (!isAdmin && !isProjectManager && !isCreator) {
+            throw new RuntimeException("Access Denied: You don't have permission to edit this bug");
+        }
+
+        if (request.getTitle() != null) bug.setTitle(request.getTitle());
+        if (request.getDescription() != null) bug.setDescription(request.getDescription());
+        if (request.getPriority() != null) bug.setPriority(BugPriority.valueOf(request.getPriority().toUpperCase()));
+        
+        if (request.getAssigneeId() != null && request.getAssigneeId() > 0) {
+            User assignee = userRepository.findById(request.getAssigneeId())
+                    .orElseThrow(() -> new RuntimeException("Assignee not found"));
+            
+            if (!memberRepository.existsByProjectAndUserAndStatus(bug.getProject(), assignee, ProjectMemberStatus.ACCEPTED)) {
+                throw new RuntimeException("Assignee must be a member of the project");
+            }
+            bug.setAssignee(assignee);
+        } else {
+            // Allow unassigning if ID is null or 0 (standard for "Unassigned")
+            bug.setAssignee(null);
+        }
+
+        bugRepository.save(bug);
+    }
+
     private BugResponse mapToResponse(Bug bug) {
         return BugResponse.builder()
                 .id(bug.getId())
@@ -134,7 +211,7 @@ public class BugService {
                 .status(bug.getStatus().name())
                 .projectId(bug.getProject().getId())
                 .projectName(bug.getProject().getName())
-                .creatorName(bug.getCreator().getName())
+                .creatorName(bug.getCreator() != null ? bug.getCreator().getName() : "Unknown")
                 .assigneeName(bug.getAssignee() != null ? bug.getAssignee().getName() : "Unassigned")
                 .assigneeId(bug.getAssignee() != null ? bug.getAssignee().getId() : null)
                 .createdAt(bug.getCreatedAt())

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import '../Dashboard.css';
@@ -25,12 +26,18 @@ const Invitations = () => {
         }
     };
 
+    const navigate = useNavigate();
+
     const handleResponse = async (inviteId, status) => {
         try {
             await axios.post(`http://localhost:8080/api/projects/invites/${inviteId}/respond?status=${status}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            fetchInvites();
+            if (status === 'ACCEPTED') {
+                navigate('/projects');
+            } else {
+                fetchInvites();
+            }
         } catch (err) {
             alert("Action failed: " + (err.response?.data?.error || "Error"));
         }

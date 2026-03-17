@@ -340,17 +340,32 @@ body {
     border: none;
     cursor: pointer;
     color: #64748b;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
+    padding: 0.6rem;
+    border-radius: 50%;
+    /* Circle effect */
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .icon-btn:hover {
     background-color: #f1f5f9;
-    color: var(--text-primary);
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.icon-btn.primary:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.project-actions,
+.action-btns {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.25rem;
 }
 
 .profile-menu {
@@ -475,6 +490,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.card-health .card-icon {
+    background: #fdf2f2;
+    color: #ef4444;
+}
+
+.card-invite .card-icon {
+    background: #fef3c7;
+    color: #f59e0b;
 }
 
 .card-icon svg {

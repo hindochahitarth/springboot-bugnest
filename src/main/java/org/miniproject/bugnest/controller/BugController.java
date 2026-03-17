@@ -31,6 +31,12 @@ public class BugController {
         return ResponseEntity.ok(bugService.getBugsByProject(projectId, user));
     }
 
+    @GetMapping("/bugs")
+    public ResponseEntity<List<BugResponse>> getAllBugs() {
+        User user = getCurrentUser();
+        return ResponseEntity.ok(bugService.getAllBugsForUser(user));
+    }
+
     @PostMapping("/bugs")
     public ResponseEntity<?> createBug(@RequestBody BugCreateRequest request) {
         try {
@@ -59,6 +65,17 @@ public class BugController {
             User manager = getCurrentUser();
             bugService.assignBug(id, userId, manager);
             return ResponseEntity.ok(Map.of("message", "Bug assigned successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/bugs/{id}")
+    public ResponseEntity<?> updateBug(@PathVariable Long id, @RequestBody BugCreateRequest request) {
+        try {
+            User user = getCurrentUser();
+            bugService.updateBug(id, request, user);
+            return ResponseEntity.ok(Map.of("message", "Bug updated successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

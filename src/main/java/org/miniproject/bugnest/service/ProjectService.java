@@ -30,6 +30,11 @@ public class ProjectService {
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         project.setProjectKey(request.getProjectKey().toUpperCase());
+        
+        if (projectRepository.findByProjectKey(project.getProjectKey()).isPresent()) {
+            throw new RuntimeException("Project key '" + project.getProjectKey() + "' already exists. Please choose a different key.");
+        }
+
         project.setCreator(creator);
         if (request.getStatus() != null) project.setStatus(request.getStatus());
         
@@ -54,8 +59,8 @@ public class ProjectService {
         if (user.getRole() == Role.ADMIN) {
             projects = projectRepository.findAll();
         } else {
-            // Find projects where user is an ACCEPTED member
-            projects = memberRepository.findByUserAndStatus(user, ProjectMemberStatus.ACCEPTED)
+            // Find projects where user is an ACCEPTED member (using ID for robustness)
+            projects = memberRepository.findByUser_IdAndStatus(user.getId(), ProjectMemberStatus.ACCEPTED)
                     .stream()
                     .map(ProjectMember::getProject)
                     .collect(Collectors.toList());
@@ -78,15 +83,17 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
         
-        // Security Check: Only Admin or Project Owner can invite
+        // Security Check: Only Admin or Project Manager (accepted member) can invite
         ProjectMember inviterMembership = memberRepository.findByProjectAndUser(project, inviter)
                 .orElse(null);
-        
-        boolean isAdmin = inviter.getRole() == Role.ADMIN;
-        boolean isOwner = inviterMembership != null && inviterMembership.isProjectOwner();
 
-        if (!isAdmin && !isOwner) {
-            throw new RuntimeException("Access Denied: Only project owners or admins can invite members.");
+        boolean isAdmin = inviter.getRole() == Role.ADMIN;
+        boolean isPM = inviterMembership != null && 
+                       inviterMembership.getRole() == Role.PROJECT_MANAGER && 
+                       inviterMembership.getStatus() == ProjectMemberStatus.ACCEPTED;
+
+        if (!isAdmin && !isPM) {
+            throw new RuntimeException("Access Denied: Only project managers or admins can invite members.");
         }
 
         String email = request.getUserEmail().toLowerCase();
@@ -168,26 +175,49 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
         
-        ProjectMember memberToRemove = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
-
-        // Security Check: Only Admin or Project Owner can remove members
-        ProjectMember actorMember = memberRepository.findByProjectAndUser(project, actor)
-                .orElse(null);
-        
+        ProjectMember actorMembership = memberRepository.findByProjectAndUser(project, actor).orElse(null);
         boolean isAdmin = actor.getRole() == Role.ADMIN;
-        boolean isOwner = actorMember != null && actorMember.isProjectOwner();
+        boolean isPM = actorMembership != null && actorMembership.getRole() == Role.PROJECT_MANAGER && actorMembership.isProjectOwner();
 
-        if (!isAdmin && !isOwner) {
+        if (!isAdmin && !isPM) {
             throw new RuntimeException("Access Denied: Only project owners or admins can remove members.");
         }
 
-        // Cannot remove the owner themselves unless it's an admin (but usually owner is protected)
+        ProjectMember memberToRemove = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        
         if (memberToRemove.isProjectOwner() && !isAdmin) {
-            throw new RuntimeException("Cannot remove the project owner.");
+             throw new RuntimeException("Cannot remove the project owner.");
         }
 
         memberRepository.delete(memberToRemove);
+    }
+
+    public List<UserSummaryResponse> getAvailableUsers(Long projectId, Role role) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        
+        // Find all users with the specified role (using stream as fallback for robustness)
+        List<User> usersByRole = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == role)
+                .collect(Collectors.toList());
+        
+        // Find current members of the project
+        List<ProjectMember> currentMembers = memberRepository.findByProject(project);
+
+        List<String> currentMemberEmails = currentMembers.stream()
+                .map(m -> {
+                    if (m.getUser() != null) return m.getUser().getEmail().toLowerCase();
+                    return m.getInvitedEmail() != null ? m.getInvitedEmail().toLowerCase() : null;
+                })
+                .filter(java.util.Objects::nonNull)
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        return usersByRole.stream()
+                .filter(u -> !currentMemberEmails.contains(u.getEmail().toLowerCase().trim()))
+                .map(u -> new UserSummaryResponse(u.getName(), u.getEmail()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -239,7 +269,7 @@ public class ProjectService {
                 .name(project.getName())
                 .description(project.getDescription())
                 .projectKey(project.getProjectKey())
-                .creatorName(project.getCreator().getName())
+                .creatorName(project.getCreator() != null ? project.getCreator().getName() : "Unknown")
                 .memberCount(memberRepository.findByProject(project).stream()
                         .filter(m -> m.getStatus() == ProjectMemberStatus.ACCEPTED)
                         .count())

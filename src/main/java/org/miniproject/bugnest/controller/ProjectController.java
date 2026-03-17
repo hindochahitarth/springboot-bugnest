@@ -4,6 +4,8 @@ import org.miniproject.bugnest.dto.*;
 import org.miniproject.bugnest.model.*;
 import org.miniproject.bugnest.service.ProjectService;
 import org.miniproject.bugnest.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,8 @@ import java.util.Map;
 @RequestMapping("/api/projects")
 @CrossOrigin(origins = "*")
 public class ProjectController {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
     @Autowired
     private ProjectService projectService;
@@ -31,6 +35,7 @@ public class ProjectController {
             Project project = projectService.createProject(request, creator);
             return ResponseEntity.ok(Map.of("message", "Project created successfully", "project", project));
         } catch (Exception e) {
+            logger.error("Error creating project: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
@@ -84,6 +89,11 @@ public class ProjectController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/{id}/available-users")
+    public ResponseEntity<List<UserSummaryResponse>> getAvailableUsers(@PathVariable Long id, @RequestParam Role role) {
+        return ResponseEntity.ok(projectService.getAvailableUsers(id, role));
     }
 
     private User getCurrentUser() {

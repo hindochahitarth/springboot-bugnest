@@ -6,7 +6,7 @@ import '../Dashboard.css';
 
 const ManageMembers = () => {
     const { projectId } = useParams();
-    const { token } = useContext(AuthContext);
+    const { token, user } = useContext(AuthContext);
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showInviteModal, setShowInviteModal] = useState(false);
@@ -71,9 +71,12 @@ const ManageMembers = () => {
 
     if (loading) return <div className="loading-state">Loading members...</div>;
 
-    // Security: Is current user the owner?
+    // Security: Is current user allowed to manage?
     const currentUserMembership = members.find(m => m.userEmail === user?.email);
-    const isOwner = user?.role === 'ADMIN' || (currentUserMembership && currentUserMembership.isProjectOwner);
+    const canManage = user?.role === 'ADMIN' ||
+        (currentUserMembership &&
+            currentUserMembership.role === 'PROJECT_MANAGER' &&
+            currentUserMembership.status === 'ACCEPTED');
 
     return (
         <div className="manage-members-page">
@@ -82,9 +85,11 @@ const ManageMembers = () => {
                     <h2>Project Team</h2>
                     <p>Manage who has access to this project and their roles.</p>
                 </div>
-                <button className="btn-primary" onClick={() => setShowInviteModal(true)}>
-                    + Invite Member
-                </button>
+                {canManage && (
+                    <button className="btn-primary" onClick={() => setShowInviteModal(true)}>
+                        + Invite Member
+                    </button>
+                )}
             </div>
 
             <div className="tabs-container">
@@ -135,11 +140,13 @@ const ManageMembers = () => {
                                 </td>
                                 <td>{member.joinedAt || "N/A"}</td>
                                 <td>
-                                    <button className="btn-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                                        </svg>
-                                    </button>
+                                    {canManage && !member.isProjectOwner && (
+                                        <button className="btn-icon" style={{ color: '#ef4444' }} onClick={() => handleRemove(member.id)} title="Remove Member">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.342-.059.682-.114 1.022-.166m1.022.166L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.342-.059.682-.114 1.022-.166m1.022.166" />
+                                            </svg>
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}
