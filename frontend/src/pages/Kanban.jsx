@@ -31,11 +31,11 @@ const Kanban = () => {
     };
 
     const columns = [
-        { id: 'OPEN', title: 'Open', color: '#ef4444' },
-        { id: 'IN_PROGRESS', title: 'In Progress', color: '#3b82f6' },
-        { id: 'REVIEW', title: 'Review', color: '#f59e0b' },
-        { id: 'TESTING', title: 'Testing', color: '#10b981' },
-        { id: 'CLOSED', title: 'Closed', color: '#64748b' },
+        { id: 'OPEN', title: 'Open' },
+        { id: 'IN_PROGRESS', title: 'In Progress' },
+        { id: 'REVIEW', title: 'Review' },
+        { id: 'TESTING', title: 'Testing' },
+        { id: 'CLOSED', title: 'Closed' },
     ];
 
     const getBugsByStatus = (status) => bugs.filter(bug => bug.status === status);
@@ -48,12 +48,12 @@ const Kanban = () => {
 
             <div className="kanban-board">
                 {loading ? (
-                    <div style={{ textAlign: 'center', width: '100%', padding: '3rem', color: '#64748b' }}>Loading board...</div>
+                    <div style={{ textAlign: 'center', width: '100%', padding: '3rem', color: 'var(--text-secondary)' }}>Loading board...</div>
                 ) : columns.map(column => (
                     <div key={column.id} className="kanban-column">
                         <div className="kanban-column-header">
                             <h3 className="column-title">
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: column.color }}></span>
+                                <span className={`kanban-dot kanban-dot-${column.id.toLowerCase()}`} />
                                 {column.title}
                             </h3>
                             <span className="column-count">{getBugsByStatus(column.id).length}</span>
@@ -76,7 +76,7 @@ const Kanban = () => {
                                         <div className="avatar-sm" style={{ width: '24px', height: '24px', fontSize: '0.7rem' }}>
                                             {bug.assigneeName?.charAt(0) || '?'}
                                         </div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{bug.assigneeName}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{bug.assigneeName}</div>
                                     </div>
                                 </div>
                             ))}

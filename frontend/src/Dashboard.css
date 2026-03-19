@@ -1,54 +1,4 @@
-/* =========================================
-   Global Layout & Reset
-   ========================================= */
-:root {
-    --sidebar-width: 260px;
-    --sidebar-collapsed-width: 80px;
-    --navbar-height: 70px;
-
-    /* Light Theme Variables */
-    --primary-color: #2563eb;
-    --primary-hover: #1d4ed8;
-    --primary-light: #eff6ff;
-    --bg-color: #f8fafc;
-    --sidebar-bg: #ffffff;
-    --sidebar-text: #64748b;
-    --sidebar-text-active: #2563eb;
-    --card-bg: #ffffff;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --info-color: #3b82f6;
-    --navbar-bg: #ffffff;
-    --search-bg: #f1f5f9;
-    --card-hover-shadow: rgba(0, 0, 0, 0.05);
-}
-
-.dark-theme {
-    --bg-color: #0f172a;
-    --sidebar-bg: #1e293b;
-    --sidebar-text: #94a3b8;
-    --sidebar-text-active: #3882f6;
-    --card-bg: #1e293b;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --border-color: #334155;
-    --navbar-bg: #1e293b;
-    --search-bg: #334155;
-    --primary-light: rgba(37, 99, 235, 0.15);
-    --card-hover-shadow: rgba(0, 0, 0, 0.25);
-}
-
-body {
-    background-color: var(--bg-color);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--text-primary);
-    overflow: hidden;
-    margin: 0;
-}
+/* Theme tokens live in `index.css`. This file is component/layout styling only. */
 
 .app-container {
     display: flex;
@@ -1109,6 +1059,20 @@ body {
     align-items: center;
     gap: 0.5rem;
 }
+
+.kanban-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    display: inline-block;
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.kanban-dot-open { color: var(--danger-color); background: var(--danger-color); }
+.kanban-dot-in_progress { color: var(--info-color); background: var(--info-color); }
+.kanban-dot-review { color: var(--warning-color); background: var(--warning-color); }
+.kanban-dot-testing { color: var(--success-color); background: var(--success-color); }
+.kanban-dot-closed { color: var(--text-secondary); background: var(--text-secondary); }
 
 .column-count {
     background-color: var(--border-color);

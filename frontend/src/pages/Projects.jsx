@@ -168,29 +168,79 @@ const CreateProjectModal = ({ token, onClose, onSuccess }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-            <div className="modal-content" style={{ background: 'white', padding: '2rem', borderRadius: '1rem', width: '100%', maxWidth: '480px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-                <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Create New Project</h3>
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Project Name</label>
-                        <input required type="text" className="modal-input" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', boxSizing: 'border-box' }} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+        <div className="ui-modal-overlay" role="dialog" aria-modal="true">
+            <div className="ui-modal">
+                <div className="ui-modal-header">
+                    <div>
+                        <h3 className="ui-modal-title">Create project</h3>
+                        <p className="ui-modal-subtitle">Set a name, key, and optional description.</p>
                     </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Project Key (Short Name)</label>
-                        <input required type="text" className="modal-input" maxLength="5" placeholder="e.g. BNF" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', boxSizing: 'border-box' }} value={formData.projectKey} onChange={e => setFormData({ ...formData, projectKey: e.target.value.toUpperCase() })} />
-                    </div>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Description</label>
-                        <textarea className="modal-input" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', minHeight: '100px', boxSizing: 'border-box', resize: 'vertical' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-                    </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button type="button" onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: 'white' }}>Cancel</button>
-                        <button type="submit" disabled={loading} className="btn-primary-sm" style={{ flex: 1, padding: '0.75rem' }}>
-                            {loading ? 'Creating...' : 'Create Project'}
-                        </button>
-                    </div>
-                </form>
+                    <button className="ui-modal-close" onClick={onClose} aria-label="Close">
+                        ×
+                    </button>
+                </div>
+
+                <div className="ui-modal-body">
+                    <form onSubmit={handleSubmit} className="ui-form">
+                        <div className="ui-field">
+                            <label>Project name</label>
+                            <input
+                                required
+                                type="text"
+                                className="ui-input"
+                                value={formData.name}
+                                placeholder="e.g. BugNest Mobile"
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="ui-form-row">
+                            <div className="ui-field">
+                                <label>Project key</label>
+                                <input
+                                    required
+                                    type="text"
+                                    className="ui-input"
+                                    maxLength={5}
+                                    placeholder="e.g. BNF"
+                                    value={formData.projectKey}
+                                    onChange={(e) => setFormData({ ...formData, projectKey: e.target.value.toUpperCase() })}
+                                />
+                            </div>
+
+                            <div className="ui-field">
+                                <label>Status</label>
+                                <select
+                                    className="ui-input"
+                                    value={formData.status}
+                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                >
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="ui-field">
+                            <label>Description</label>
+                            <textarea
+                                className="ui-textarea"
+                                value={formData.description}
+                                placeholder="What is this project about?"
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="ui-modal-footer">
+                            <button type="button" className="ui-btn ui-btn-ghost" onClick={onClose} style={{ flex: 1 }}>
+                                Cancel
+                            </button>
+                            <button type="submit" disabled={loading} className="ui-btn ui-btn-primary" style={{ flex: 1 }}>
+                                {loading ? 'Creating…' : 'Create project'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

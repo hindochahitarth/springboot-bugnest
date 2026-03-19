@@ -128,7 +128,7 @@ const Bugs = () => {
                                 <span className="bug-count-pill">{getProjectBugCount(project.id)}</span>
                                 Bugs Found
                             </div>
-                            <div style={{ marginTop: 'auto', fontSize: '0.8rem', color: '#94a3b8' }}>
+                            <div style={{ marginTop: 'auto', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                 Click to view and manage bugs
                             </div>
                         </div>
@@ -154,7 +154,7 @@ const Bugs = () => {
                             ) : (
                                 filteredBugs.map(bug => (
                                     <tr key={bug.id}>
-                                        <td style={{ fontWeight: '700', color: '#64748b' }}>{bug.bugId}</td>
+                                        <td style={{ fontWeight: '700', color: 'var(--text-secondary)' }}>{bug.bugId}</td>
                                         <td style={{ fontWeight: '600' }}>{bug.title}</td>
                                         <td>
                                             <span className={`priority-${bug.priority.toLowerCase()}`} style={{ fontWeight: '700', fontSize: '0.75rem' }}>
@@ -229,14 +229,14 @@ const Bugs = () => {
 
 const BugDetailModal = ({ bug, onClose }) => {
     return (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-            <div className="modal-content" style={{ background: 'white', padding: '2rem', borderRadius: '1rem', width: '100%', maxWidth: '800px' }}>
-                <div className="modal-header">
+        <div className="ui-modal-overlay" role="dialog" aria-modal="true">
+            <div className="ui-modal" style={{ maxWidth: 900 }}>
+                <div className="ui-modal-header">
                     <div>
-                        <span style={{ fontSize: '0.875rem', color: '#94a3b8', fontWeight: 600 }}>{bug.bugId}</span>
-                        <h3>{bug.title}</h3>
+                        <h3 className="ui-modal-title">{bug.title}</h3>
+                        <p className="ui-modal-subtitle">{bug.bugId}</p>
                     </div>
-                    <button className="close-btn" onClick={onClose}>&times;</button>
+                    <button className="ui-modal-close" onClick={onClose} aria-label="Close">×</button>
                 </div>
 
                 <div className="bug-detail-grid">
@@ -329,58 +329,68 @@ const EditBugModal = ({ token, bug, onClose, onSuccess }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-            <div className="modal-content" style={{ background: 'white', padding: '2rem', borderRadius: '1rem', width: '100%', maxWidth: '500px' }}>
-                <div className="modal-header">
-                    <h3>Edit Bug: {bug.bugId}</h3>
-                    <button className="close-btn" onClick={onClose}>&times;</button>
+        <div className="ui-modal-overlay" role="dialog" aria-modal="true">
+            <div className="ui-modal" style={{ maxWidth: 640 }}>
+                <div className="ui-modal-header">
+                    <div>
+                        <h3 className="ui-modal-title">Edit bug</h3>
+                        <p className="ui-modal-subtitle">{bug.bugId}</p>
+                    </div>
+                    <button className="ui-modal-close" onClick={onClose} aria-label="Close">×</button>
                 </div>
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Title</label>
-                        <input required type="text" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Priority</label>
-                            <select style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
-                                <option value="LOW">Low</option>
-                                <option value="MEDIUM">Medium</option>
-                                <option value="HIGH">High</option>
-                                <option value="HIGHEST">Highest</option>
+
+                <div className="ui-modal-body">
+                    <form onSubmit={handleSubmit} className="ui-form">
+                        <div className="ui-field">
+                            <label>Title</label>
+                            <input required type="text" className="ui-input" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                        </div>
+
+                        <div className="ui-form-row">
+                            <div className="ui-field">
+                                <label>Priority</label>
+                                <select className="ui-input" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="HIGHEST">Highest</option>
+                                </select>
+                            </div>
+                            <div className="ui-field">
+                                <label>Status</label>
+                                <select className="ui-input" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}>
+                                    <option value="OPEN">Open</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="REVIEW">Review</option>
+                                    <option value="TESTING">Testing</option>
+                                    <option value="CLOSED">Closed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="ui-field">
+                            <label>Assign to</label>
+                            <select className="ui-input" value={formData.assigneeId} onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}>
+                                <option value="">Unassigned</option>
+                                {members.map(m => (
+                                    <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>
+                                ))}
                             </select>
                         </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Status</label>
-                            <select style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}>
-                                <option value="OPEN">Open</option>
-                                <option value="IN_PROGRESS">In Progress</option>
-                                <option value="REVIEW">Review</option>
-                                <option value="TESTING">Testing</option>
-                                <option value="CLOSED">Closed</option>
-                            </select>
+
+                        <div className="ui-field">
+                            <label>Description</label>
+                            <textarea className="ui-textarea" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                         </div>
-                    </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Assign To</label>
-                        <select style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.assigneeId} onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}>
-                            <option value="">Unassigned</option>
-                            {members.map(m => (
-                                <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Description</label>
-                        <textarea style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', minHeight: '120px' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-                    </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button type="button" onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: 'white' }}>Cancel</button>
-                        <button type="submit" disabled={loading} className="btn-primary-sm" style={{ flex: 1, padding: '0.75rem' }}>
-                            {loading ? 'Updating...' : 'Save Changes'}
-                        </button>
-                    </div>
-                </form>
+
+                        <div className="ui-modal-footer">
+                            <button type="button" onClick={onClose} className="ui-btn ui-btn-ghost" style={{ flex: 1 }}>Cancel</button>
+                            <button type="submit" disabled={loading} className="ui-btn ui-btn-primary" style={{ flex: 1 }}>
+                                {loading ? 'Updating…' : 'Save changes'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );
@@ -455,54 +465,69 @@ const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-            <div className="modal-content" style={{ background: 'white', padding: '2rem', borderRadius: '1rem', width: '100%', maxWidth: '480px' }}>
-                <h3 style={{ marginBottom: '1.5rem' }}>Report New Bug</h3>
-                <form onSubmit={handleSubmit}>
-                    {!projectId && (
-                        <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Project</label>
-                            <select required style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.projectId} onChange={handleProjectChange}>
-                                <option value="">Select Project</option>
-                                {projects.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name} ({p.projectKey})</option>
-                                ))}
-                            </select>
+        <div className="ui-modal-overlay" role="dialog" aria-modal="true">
+            <div className="ui-modal" style={{ maxWidth: 640 }}>
+                <div className="ui-modal-header">
+                    <div>
+                        <h3 className="ui-modal-title">Report bug</h3>
+                        <p className="ui-modal-subtitle">Provide title, priority, and details.</p>
+                    </div>
+                    <button className="ui-modal-close" onClick={onClose} aria-label="Close">×</button>
+                </div>
+
+                <div className="ui-modal-body">
+                    <form onSubmit={handleSubmit} className="ui-form">
+                        {!projectId && (
+                            <div className="ui-field">
+                                <label>Project</label>
+                                <select required className="ui-input" value={formData.projectId} onChange={handleProjectChange}>
+                                    <option value="">Select project</option>
+                                    {projects.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name} ({p.projectKey})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        <div className="ui-field">
+                            <label>Title</label>
+                            <input required type="text" className="ui-input" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
                         </div>
-                    )}
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Title</label>
-                        <input required type="text" style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
-                    </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Priority</label>
-                        <select style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
-                            <option value="LOW">Low</option>
-                            <option value="MEDIUM">Medium</option>
-                            <option value="HIGH">High</option>
-                            <option value="HIGHEST">Highest</option>
-                        </select>
-                    </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Assign To</label>
-                        <select style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} value={formData.assigneeId} onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}>
-                            <option value="">Unassigned</option>
-                            {members.map(m => (
-                                <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600 }}>Description</label>
-                        <textarea style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', minHeight: '100px' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-                    </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button type="button" onClick={onClose} style={{ flex: 1, padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', background: 'white' }}>Cancel</button>
-                        <button type="submit" disabled={loading} className="btn-primary-sm" style={{ flex: 1, padding: '0.75rem' }}>
-                            {loading ? 'Submitting...' : 'Report Bug'}
-                        </button>
-                    </div>
-                </form>
+
+                        <div className="ui-form-row">
+                            <div className="ui-field">
+                                <label>Priority</label>
+                                <select className="ui-input" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="HIGHEST">Highest</option>
+                                </select>
+                            </div>
+                            <div className="ui-field">
+                                <label>Assignee</label>
+                                <select className="ui-input" value={formData.assigneeId} onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}>
+                                    <option value="">Unassigned</option>
+                                    {members.map(m => (
+                                        <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="ui-field">
+                            <label>Description</label>
+                            <textarea className="ui-textarea" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                        </div>
+
+                        <div className="ui-modal-footer">
+                            <button type="button" onClick={onClose} className="ui-btn ui-btn-ghost" style={{ flex: 1 }}>Cancel</button>
+                            <button type="submit" disabled={loading} className="ui-btn ui-btn-primary" style={{ flex: 1 }}>
+                                {loading ? 'Submitting…' : 'Report bug'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

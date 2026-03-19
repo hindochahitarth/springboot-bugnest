@@ -3,17 +3,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f8fafc;
+    background-color: var(--bg-color);
     padding: 2rem;
 }
 
 .register-card {
-    background: white;
+    background: var(--card-bg);
     padding: 2.5rem;
     border-radius: 1rem;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 440px;
+    border: 1px solid var(--border-color);
 }
 
 .register-brand {
@@ -33,12 +34,12 @@
 .register-brand h1 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
 .register-brand p {
-    color: #64748b;
+    color: var(--text-secondary);
     font-size: 0.875rem;
 }
 
@@ -50,34 +51,37 @@
     display: block;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #475569;
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
 }
 
 .form-group input {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     font-size: 0.95rem;
     transition: all 0.2s;
+    background: var(--input-bg);
+    color: var(--text-primary);
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--input-focus-ring);
+    background: var(--card-bg);
 }
 
 .form-group input:disabled {
-    background-color: #f1f5f9;
+    background-color: var(--search-bg);
     cursor: not-allowed;
 }
 
 .register-btn {
     width: 100%;
     padding: 0.75rem;
-    background-color: #2563eb;
+    background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -89,7 +93,7 @@
 }
 
 .register-btn:hover {
-    background-color: #1d4ed8;
+    background-color: var(--primary-hover);
 }
 
 .register-btn:disabled {
@@ -112,11 +116,11 @@
     margin-top: 2rem;
     text-align: center;
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--text-secondary);
 }
 
 .register-footer span {
-    color: #2563eb;
+    color: var(--primary-color);
     font-weight: 600;
     cursor: pointer;
 }
