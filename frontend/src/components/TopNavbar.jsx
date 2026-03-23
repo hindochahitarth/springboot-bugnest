@@ -133,6 +133,16 @@ const TopNavbar = ({ title }) => {
                                             </div>
                                         </div>
                                     ))}
+                                    <button
+                                        className="page-btn"
+                                        style={{ width: '100%', marginTop: '0.25rem' }}
+                                        onClick={() => {
+                                            setShowNotifications(false);
+                                            navigate('/notifications');
+                                        }}
+                                    >
+                                        View all notifications
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -141,8 +151,8 @@ const TopNavbar = ({ title }) => {
 
                 <div
                     className="profile-menu"
-                    onClick={() => navigate('/settings')}
-                    title="Go to Settings"
+                    onClick={() => navigate('/profile')}
+                    title="Go to Profile"
                 >
                     <div className="user-text">
                         <span className="user-name-top">{displayName}</span>
