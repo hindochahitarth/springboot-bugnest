@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,8 +32,21 @@ public class Bug {
     private BugPriority priority;
 
     @Enumerated(EnumType.STRING)
+    @Column
+    private BugSeverity severity = BugSeverity.MINOR;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BugStatus status;
+
+    @Column(name = "tags", columnDefinition = "TEXT")
+    private String tags; // comma-separated labels
+
+    @Column(name = "due_date")
+    private LocalDate dueDate;
+
+    @Column(name = "resolution_notes", columnDefinition = "TEXT")
+    private String resolutionNotes;
 
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)
@@ -56,6 +70,7 @@ public class Bug {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (severity == null) severity = BugSeverity.MINOR;
     }
 
     @PreUpdate

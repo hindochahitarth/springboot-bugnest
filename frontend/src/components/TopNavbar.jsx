@@ -34,6 +34,8 @@ const TopNavbar = ({ title }) => {
     const { theme, toggleTheme } = useContext(ThemeContext);
     const navigate = useNavigate();
     const [invites, setInvites] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
 
     const displayName = user?.sub || user?.email || "User";
@@ -42,6 +44,7 @@ const TopNavbar = ({ title }) => {
     useEffect(() => {
         if (token) {
             fetchInvites();
+            fetchNotifications();
         }
     }, [token]);
 
@@ -53,6 +56,23 @@ const TopNavbar = ({ title }) => {
             setInvites(response.data);
         } catch (error) {
             console.error("Error fetching invites:", error);
+        }
+    };
+
+    const fetchNotifications = async () => {
+        try {
+            const [countRes, listRes] = await Promise.all([
+                axios.get('http://localhost:8080/api/notifications/unread-count', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get('http://localhost:8080/api/notifications', {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+            setUnreadCount(countRes.data?.unread || 0);
+            setNotifications((listRes.data || []).slice(0, 5));
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
         }
     };
 
@@ -89,12 +109,12 @@ const TopNavbar = ({ title }) => {
 
                 <div className="notifications-container" style={{ position: 'relative' }}>
                     <button
-                        className={`icon-btn ${invites.length > 0 ? 'has-notifications' : ''}`}
+                        className={`icon-btn ${(invites.length + unreadCount) > 0 ? 'has-notifications' : ''}`}
                         title="Notifications"
                         onClick={() => setShowNotifications(!showNotifications)}
                     >
                         <BellIcon />
-                        {invites.length > 0 && <span className="notification-badge">{invites.length}</span>}
+                        {(invites.length + unreadCount) > 0 && <span className="notification-badge">{invites.length + unreadCount}</span>}
                     </button>
 
                     {showNotifications && (
@@ -106,12 +126,19 @@ const TopNavbar = ({ title }) => {
                             zIndex: 1000, marginTop: '0.5rem', padding: '1rem'
                         }}>
                             <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: '#475569' }}>PRODUCT UPDATES & INVITES</h4>
-                            {invites.length === 0 ? (
+                            {(invites.length === 0 && notifications.length === 0) ? (
                                 <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center', margin: '2rem 0' }}>No new notifications</p>
                             ) : (
                                 <div className="invites-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {notifications.map(n => (
+                                        <div key={n.id} style={{ fontSize: '0.85rem', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9', opacity: n.read ? 0.75 : 1 }}>
+                                            <p style={{ margin: '0 0 0.25rem 0' }}><strong>{n.type}</strong></p>
+                                            <p style={{ margin: 0, color: '#475569' }}>{n.message}</p>
+                                        </div>
+                                    ))}
+
                                     {invites.map(invite => (
-                                        <div key={invite.id} style={{ fontSize: '0.85rem', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
+                                        <div key={`invite-${invite.id}`} style={{ fontSize: '0.85rem', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
                                             <p style={{ margin: '0 0 0.5rem 0' }}>
                                                 You've been invited to join as <strong>{invite.role}</strong>
                                             </p>
@@ -133,6 +160,7 @@ const TopNavbar = ({ title }) => {
                                             </div>
                                         </div>
                                     ))}
+
                                     <button
                                         className="page-btn"
                                         style={{ width: '100%', marginTop: '0.25rem' }}

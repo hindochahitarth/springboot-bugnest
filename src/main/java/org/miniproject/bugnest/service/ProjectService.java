@@ -24,6 +24,9 @@ public class ProjectService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Transactional
     public Project createProject(ProjectCreateRequest request, User creator) {
         Project project = new Project();
@@ -168,6 +171,12 @@ public class ProjectService {
         memberRepository.save(member);
         
         // TODO: Send email notification
+
+        // In-app notification for registered users
+        if (member.getUser() != null) {
+            String msg = "You were invited to project " + project.getName() + " as " + member.getRole().name();
+            notificationService.create(member.getUser(), "INVITE", msg, "/invites");
+        }
     }
 
     @Transactional

@@ -45,6 +45,10 @@ const Reports = () => {
     return Object.entries(byStatus).map(([status, count]) => ({ status, count }));
   }, [byStatus]);
 
+  const maxCount = useMemo(() => {
+    return Math.max(1, ...rows.map((r) => r.count));
+  }, [rows]);
+
   return (
     <div className="page-container">
       <header className="page-header">
@@ -80,6 +84,7 @@ const Reports = () => {
                 <tr>
                   <th>Status</th>
                   <th>Count</th>
+                  <th>Trend</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,6 +96,34 @@ const Reports = () => {
                       </span>
                     </td>
                     <td style={{ fontWeight: 700 }}>{r.count}</td>
+                    <td>
+                      <div
+                        style={{
+                          height: 10,
+                          width: "100%",
+                          background: "var(--border-color)",
+                          borderRadius: 999,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${Math.round((r.count / maxCount) * 100)}%`,
+                            background:
+                              r.status === "CLOSED"
+                                ? "#22c55e"
+                                : r.status === "OPEN"
+                                  ? "#3b82f6"
+                                  : r.status === "IN_PROGRESS"
+                                    ? "#f97316"
+                                    : r.status === "REVIEW"
+                                      ? "#a855f7"
+                                      : "#0ea5e9",
+                          }}
+                        />
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

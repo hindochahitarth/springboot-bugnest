@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/projects")
-@CrossOrigin(origins = "*")
 public class ProjectController {
     
     private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
@@ -75,6 +74,8 @@ public class ProjectController {
             ProjectMemberStatus memberStatus = ProjectMemberStatus.valueOf(status.toUpperCase());
             projectService.respondToInvite(inviteId, memberStatus, user);
             return ResponseEntity.ok(Map.of("message", "Invite " + status.toLowerCase() + "ed successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid status. Use ACCEPTED or REJECTED."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import '../Dashboard.css';
 
@@ -60,9 +61,12 @@ const LogoutIcon = () => (
 );
 
 const Sidebar = () => {
-    const { user, logout } = useContext(AuthContext);
+    const { user, token, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
+    const [nextDue, setNextDue] = useState(null);
+    const [overdueCount, setOverdueCount] = useState(0);
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
 
     const isActive = (path) => location.pathname === path;
 
@@ -72,7 +76,7 @@ const Sidebar = () => {
         { label: "Dashboard", path: `/${role.toLowerCase()}/dashboard`, icon: <DashboardIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Projects", path: "/projects", icon: <ProjectsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Bugs", path: "/bugs", icon: <BugsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
-        { label: "My Bugs", path: "/my-bugs", icon: <BugsIcon />, roles: ["DEVELOPER", "TESTER"] },
+        { label: "My Bugs", path: "/my-bugs", icon: <BugsIcon />, roles: ["PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Kanban", path: "/kanban", icon: <KanbanIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Notifications", path: "/notifications", icon: <BellIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Reports", path: "/reports", icon: <ReportsIcon />, roles: ["ADMIN", "PROJECT_MANAGER"] },
@@ -81,6 +85,51 @@ const Sidebar = () => {
     ];
 
     const menuItems = allMenuItems.filter(item => item.roles.includes(role));
+
+    useEffect(() => {
+        const fetchDue = async () => {
+            try {
+                const res = await axios.get('http://localhost:8080/api/bugs/paged', {
+                    params: { page: 0, size: 50, sort: 'dueDate', dir: 'asc' },
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const items = res.data?.content || [];
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                let nearest = null;
+                let overdue = 0;
+                for (const b of items) {
+                    if (!b?.dueDate) continue;
+                    if (b?.status === 'CLOSED') continue;
+                    const d = new Date(b.dueDate);
+                    d.setHours(0, 0, 0, 0);
+                    if (d < today) overdue += 1;
+                    if (!nearest || d < nearest) nearest = d;
+                }
+
+                setOverdueCount(overdue);
+                setNextDue(nearest ? nearest.toISOString().slice(0, 10) : null);
+            } catch (e) {
+                setNextDue(null);
+                setOverdueCount(0);
+            }
+        };
+
+        const fetchUnreadNotifications = async () => {
+            try {
+                const res = await axios.get('http://localhost:8080/api/notifications/unread-count', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setUnreadNotifications(res.data?.unread || 0);
+            } catch (e) {
+                setUnreadNotifications(0);
+            }
+        };
+
+        if (token) fetchDue();
+        if (token) fetchUnreadNotifications();
+    }, [token]);
 
     return (
         <aside className="sidebar">
@@ -103,7 +152,26 @@ const Sidebar = () => {
                             onClick={() => navigate(item.path)}
                         >
                             <span className="nav-icon">{item.icon}</span>
-                            {item.label}
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {item.label}
+                                {item.path === '/notifications' && unreadNotifications > 0 && (
+                                    <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minWidth: 20,
+                                        height: 18,
+                                        padding: '0 6px',
+                                        borderRadius: 999,
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 800
+                                    }}>
+                                        {unreadNotifications}
+                                    </span>
+                                )}
+                            </span>
                         </button>
                     ))}
                 </div>
@@ -117,6 +185,21 @@ const Sidebar = () => {
             </nav>
 
             <div className="sidebar-footer">
+                {(nextDue || overdueCount > 0) && (
+                    <div style={{ padding: '0.75rem 0.9rem', borderBottom: '1px solid var(--border-color)' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '0.35rem' }}>DEADLINES</div>
+                        {nextDue && (
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>
+                                Next due: <span style={{ fontWeight: 800 }}>{nextDue}</span>
+                            </div>
+                        )}
+                        {overdueCount > 0 && (
+                            <div style={{ fontSize: '0.8rem', color: '#ef4444', fontWeight: 800 }}>
+                                Overdue: {overdueCount}
+                            </div>
+                        )}
+                    </div>
+                )}
                 <div className="user-profile-mini">
                     <div className="avatar">{user?.sub?.charAt(0).toUpperCase() || 'U'}</div>
                     <div className="user-details">
