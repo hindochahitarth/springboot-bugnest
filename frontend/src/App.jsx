@@ -12,6 +12,9 @@ import Users from "./Users";
 import Projects from "./pages/Projects";
 import Bugs from "./pages/Bugs";
 import Kanban from "./pages/Kanban";
+import MyAssignedBugs from "./pages/MyAssignedBugs";
+import Reports from "./pages/Reports";
+import BugDetail from "./pages/BugDetail";
 import "./index.css";
 import { useContext } from "react";
 import AuthContext from "./context/AuthContext";
@@ -134,6 +137,16 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/bugs/:bugId"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
+            <DashboardLayout title="Bug Detail">
+              <BugDetail />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/projects/:projectId/kanban"
         element={
           <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
@@ -159,6 +172,44 @@ function AppRoutes() {
           <ProtectedRoute>
             <DashboardLayout title="Invitations">
               <Invitations />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout title="Notifications">
+              <Invitations />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-bugs"
+        element={
+          <ProtectedRoute allowedRoles={["DEVELOPER", "TESTER"]}>
+            <DashboardLayout title="My Assigned Bugs">
+              <MyAssignedBugs />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER"]}>
+            <DashboardLayout title="Reports & Analytics">
+              <Reports />
             </DashboardLayout>
           </ProtectedRoute>
         }

@@ -26,6 +26,12 @@ public class BugService {
     @Autowired
     private org.miniproject.bugnest.repository.UserRepository userRepository;
 
+    @Autowired
+    private BugCommentRepository bugCommentRepository;
+
+    @Autowired
+    private BugAttachmentRepository bugAttachmentRepository;
+
     public List<BugResponse> getBugsByProject(Long projectId, User user) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
@@ -36,7 +42,7 @@ public class BugService {
             throw new RuntimeException("Access denied: You are not a member of this project");
         }
 
-        List<Bug> bugs = bugRepository.findByProject(project);
+        List<Bug> bugs = bugRepository.findByProjectOrderByUpdatedAtDesc(project);
 
         // Visibility Rule: Developers and Testers only see bugs assigned to them
         if (user.getRole() == Role.DEVELOPER || user.getRole() == Role.TESTER) {
@@ -48,6 +54,63 @@ public class BugService {
         return bugs.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public BugResponse getBugById(Long id, User user) {
+        Bug bug = getAccessibleBug(id, user);
+        return mapToResponse(bug);
+    }
+
+    public List<BugCommentResponse> getComments(Long bugId, User user) {
+        Bug bug = getAccessibleBug(bugId, user);
+        return bugCommentRepository.findByBugOrderByCreatedAtAsc(bug).stream()
+                .map(this::mapCommentToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public BugCommentResponse addComment(Long bugId, BugCommentRequest request, User user) {
+        if (request == null || request.getMessage() == null || request.getMessage().trim().isEmpty()) {
+            throw new RuntimeException("Comment message is required");
+        }
+
+        Bug bug = getAccessibleBug(bugId, user);
+
+        BugComment comment = new BugComment();
+        comment.setBug(bug);
+        comment.setAuthor(user);
+        comment.setMessage(request.getMessage().trim());
+
+        BugComment saved = bugCommentRepository.save(comment);
+        return mapCommentToResponse(saved);
+    }
+
+    public List<BugAttachmentResponse> getAttachments(Long bugId, User user) {
+        Bug bug = getAccessibleBug(bugId, user);
+        return bugAttachmentRepository.findByBugOrderByCreatedAtAsc(bug).stream()
+                .map(this::mapAttachmentToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public BugAttachmentResponse addAttachment(Long bugId, BugAttachmentRequest request, User user) {
+        if (request == null || request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new RuntimeException("Attachment name is required");
+        }
+        if (request.getUrl() == null || request.getUrl().trim().isEmpty()) {
+            throw new RuntimeException("Attachment URL is required");
+        }
+
+        Bug bug = getAccessibleBug(bugId, user);
+
+        BugAttachment attachment = new BugAttachment();
+        attachment.setBug(bug);
+        attachment.setUploader(user);
+        attachment.setName(request.getName().trim());
+        attachment.setUrl(request.getUrl().trim());
+
+        BugAttachment saved = bugAttachmentRepository.save(attachment);
+        return mapAttachmentToResponse(saved);
     }
 
     public List<BugResponse> getAllBugsForUser(User user) {
@@ -69,7 +132,7 @@ public class BugService {
             return List.of();
         }
 
-        List<Bug> bugs = bugRepository.findByProjectIn(projects);
+        List<Bug> bugs = bugRepository.findByProjectInOrderByUpdatedAtDesc(projects);
 
         // Visibility Rule: Developers and Testers only see bugs assigned to them
         if (user.getRole() == Role.DEVELOPER || user.getRole() == Role.TESTER) {
@@ -138,8 +201,13 @@ public class BugService {
         } else if (user.getRole() == Role.TESTER) {
             if (newStatus == BugStatus.TESTING || newStatus == BugStatus.CLOSED) {
                 bug.setStatus(newStatus);
+            } else if (newStatus == BugStatus.OPEN) {
+                if (bug.getStatus() != BugStatus.CLOSED) {
+                    throw new RuntimeException("Reopen is only allowed from Closed");
+                }
+                bug.setStatus(BugStatus.OPEN);
             } else {
-                throw new RuntimeException("Testers can only move bugs to Testing or Closed");
+                throw new RuntimeException("Testers can only move bugs to Testing, Closed, or Reopen (Open from Closed)");
             }
         }
 
@@ -217,5 +285,49 @@ public class BugService {
                 .createdAt(bug.getCreatedAt())
                 .updatedAt(bug.getUpdatedAt())
                 .build();
+    }
+
+    private BugCommentResponse mapCommentToResponse(BugComment comment) {
+        return BugCommentResponse.builder()
+                .id(comment.getId())
+                .message(comment.getMessage())
+                .authorName(comment.getAuthor() != null ? comment.getAuthor().getName() : "Unknown")
+                .authorEmail(comment.getAuthor() != null ? comment.getAuthor().getEmail() : "Unknown")
+                .createdAt(comment.getCreatedAt())
+                .build();
+    }
+
+    private BugAttachmentResponse mapAttachmentToResponse(BugAttachment attachment) {
+        return BugAttachmentResponse.builder()
+                .id(attachment.getId())
+                .name(attachment.getName())
+                .url(attachment.getUrl())
+                .uploaderName(attachment.getUploader() != null ? attachment.getUploader().getName() : "Unknown")
+                .uploaderEmail(attachment.getUploader() != null ? attachment.getUploader().getEmail() : "Unknown")
+                .createdAt(attachment.getCreatedAt())
+                .build();
+    }
+
+    private Bug getAccessibleBug(Long bugId, User user) {
+        Bug bug = bugRepository.findById(bugId)
+                .orElseThrow(() -> new RuntimeException("Bug not found"));
+
+        if (user.getRole() == Role.ADMIN) {
+            return bug;
+        }
+
+        boolean isProjectMember = memberRepository.existsByProjectAndUserAndStatus(
+                bug.getProject(), user, ProjectMemberStatus.ACCEPTED);
+        if (!isProjectMember) {
+            throw new RuntimeException("Access denied: You are not a member of this project");
+        }
+
+        if (user.getRole() == Role.DEVELOPER || user.getRole() == Role.TESTER) {
+            if (bug.getAssignee() == null || !bug.getAssignee().getId().equals(user.getId())) {
+                throw new RuntimeException("Access denied: You can only access bugs assigned to you");
+            }
+        }
+
+        return bug;
     }
 }

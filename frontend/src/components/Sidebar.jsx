@@ -34,6 +34,12 @@ const ReportsIcon = () => (
     </svg>
 );
 
+const BellIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+    </svg>
+);
+
 const UsersIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
@@ -66,10 +72,12 @@ const Sidebar = () => {
         { label: "Dashboard", path: `/${role.toLowerCase()}/dashboard`, icon: <DashboardIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Projects", path: "/projects", icon: <ProjectsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Bugs", path: "/bugs", icon: <BugsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "My Bugs", path: "/my-bugs", icon: <BugsIcon />, roles: ["DEVELOPER", "TESTER"] },
         { label: "Kanban", path: "/kanban", icon: <KanbanIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
-        { label: "Invitations", path: "/invites", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Notifications", path: "/notifications", icon: <BellIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Reports", path: "/reports", icon: <ReportsIcon />, roles: ["ADMIN", "PROJECT_MANAGER"] },
         { label: "Users", path: "/users", icon: <UsersIcon />, roles: ["ADMIN"] },
-        { label: "Settings", path: "/settings", icon: <SettingsIcon />, roles: ["ADMIN", "PROJECT_MANAGER"] },
+        { label: "Profile", path: "/profile", icon: <SettingsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
     ];
 
     const menuItems = allMenuItems.filter(item => item.roles.includes(role));

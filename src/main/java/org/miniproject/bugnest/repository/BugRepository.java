@@ -8,8 +8,8 @@ import java.util.List;
 
 @Repository
 public interface BugRepository extends JpaRepository<Bug, Long> {
-    List<Bug> findByProject(Project project);
-    List<Bug> findByProjectIn(List<Project> projects);
+    List<Bug> findByProjectOrderByUpdatedAtDesc(Project project);
+    List<Bug> findByProjectInOrderByUpdatedAtDesc(List<Project> projects);
     long countByProject(Project project);
     long countByStatusNot(org.miniproject.bugnest.model.BugStatus status);
     long countByAssigneeIsNotNull();

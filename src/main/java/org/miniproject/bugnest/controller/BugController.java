@@ -1,6 +1,10 @@
 package org.miniproject.bugnest.controller;
 
 import org.miniproject.bugnest.dto.BugCreateRequest;
+import org.miniproject.bugnest.dto.BugAttachmentRequest;
+import org.miniproject.bugnest.dto.BugAttachmentResponse;
+import org.miniproject.bugnest.dto.BugCommentRequest;
+import org.miniproject.bugnest.dto.BugCommentResponse;
 import org.miniproject.bugnest.dto.BugResponse;
 import org.miniproject.bugnest.model.User;
 import org.miniproject.bugnest.service.BugService;
@@ -35,6 +39,44 @@ public class BugController {
     public ResponseEntity<List<BugResponse>> getAllBugs() {
         User user = getCurrentUser();
         return ResponseEntity.ok(bugService.getAllBugsForUser(user));
+    }
+
+    @GetMapping("/bugs/{id}")
+    public ResponseEntity<BugResponse> getBug(@PathVariable Long id) {
+        User user = getCurrentUser();
+        return ResponseEntity.ok(bugService.getBugById(id, user));
+    }
+
+    @GetMapping("/bugs/{id}/comments")
+    public ResponseEntity<List<BugCommentResponse>> getComments(@PathVariable Long id) {
+        User user = getCurrentUser();
+        return ResponseEntity.ok(bugService.getComments(id, user));
+    }
+
+    @PostMapping("/bugs/{id}/comments")
+    public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody BugCommentRequest request) {
+        try {
+            User user = getCurrentUser();
+            return ResponseEntity.ok(bugService.addComment(id, request, user));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/bugs/{id}/attachments")
+    public ResponseEntity<List<BugAttachmentResponse>> getAttachments(@PathVariable Long id) {
+        User user = getCurrentUser();
+        return ResponseEntity.ok(bugService.getAttachments(id, user));
+    }
+
+    @PostMapping("/bugs/{id}/attachments")
+    public ResponseEntity<?> addAttachment(@PathVariable Long id, @RequestBody BugAttachmentRequest request) {
+        try {
+            User user = getCurrentUser();
+            return ResponseEntity.ok(bugService.addAttachment(id, request, user));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/bugs")

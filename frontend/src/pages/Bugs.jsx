@@ -16,7 +16,6 @@ const Bugs = () => {
     const [searchTerm, setSearchTerm] = useState("");
 
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedBug, setSelectedBug] = useState(null);
 
@@ -26,9 +25,23 @@ const Bugs = () => {
         if (!activeProjectId) {
             fetchProjectsAndBugs();
         } else {
+            if (projects.length === 0) {
+                fetchProjects();
+            }
             fetchBugs(activeProjectId);
         }
     }, [activeProjectId, token]);
+
+    const fetchProjects = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/projects', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setProjects(response.data);
+        } catch (error) {
+            console.error("Error fetching projects:", error);
+        }
+    };
 
     const fetchProjectsAndBugs = async () => {
         setLoading(true);
@@ -50,6 +63,7 @@ const Bugs = () => {
 
     const fetchBugs = async (pId) => {
         setLoading(true);
+        setBugs([]);
         try {
             const response = await axios.get(`http://localhost:8080/api/projects/${pId}/bugs`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -169,7 +183,7 @@ const Bugs = () => {
                                         <td>{bug.assigneeName}</td>
                                         <td>
                                             <div className="action-btns">
-                                                <button className="icon-btn" title="View Details" onClick={() => { setSelectedBug(bug); setShowDetailModal(true); }}>
+                                                <button className="icon-btn" title="Open Bug Page" onClick={() => navigate(`/bugs/${bug.id}`)}>
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="18" height="18">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -202,13 +216,6 @@ const Bugs = () => {
                         if (activeProjectId) fetchBugs(activeProjectId);
                         else fetchProjectsAndBugs();
                     }}
-                />
-            )}
-
-            {showDetailModal && selectedBug && (
-                <BugDetailModal
-                    bug={selectedBug}
-                    onClose={() => setShowDetailModal(false)}
                 />
             )}
 

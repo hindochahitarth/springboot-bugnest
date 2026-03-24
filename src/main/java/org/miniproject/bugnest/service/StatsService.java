@@ -45,7 +45,7 @@ public class StatsService {
                 resolvedBugs = 0;
             } else {
                 // Bugs in user's projects
-                java.util.List<Bug> allMyProjectBugs = bugRepository.findByProjectIn(myProjects);
+                java.util.List<Bug> allMyProjectBugs = bugRepository.findByProjectInOrderByUpdatedAtDesc(myProjects);
                 
                 openBugs = allMyProjectBugs.stream()
                         .filter(b -> b.getStatus() != BugStatus.CLOSED)
