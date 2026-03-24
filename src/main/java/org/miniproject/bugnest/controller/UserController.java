@@ -2,6 +2,7 @@ package org.miniproject.bugnest.controller;
 
 import org.miniproject.bugnest.dto.PasswordChangeRequest;
 import org.miniproject.bugnest.dto.ProfileUpdateRequest;
+import org.miniproject.bugnest.dto.CurrentUserResponse;
 import org.miniproject.bugnest.model.User;
 import org.miniproject.bugnest.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*") // Configure as needed
 public class UserController {
 
     @Autowired
@@ -50,7 +50,14 @@ public class UserController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
             User user = userService.getUserPixel(email);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(CurrentUserResponse.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .role(user.getRole() != null ? user.getRole().name() : null)
+                    .status(user.getStatus() != null ? user.getStatus().name() : null)
+                    .createdAt(user.getCreatedAt())
+                    .build());
         } catch (Exception e) {
              return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

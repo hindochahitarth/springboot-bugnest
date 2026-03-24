@@ -8,7 +8,7 @@ import './Bugs.css';
 const Kanban = () => {
     const { projectId } = useParams();
     const navigate = useNavigate();
-    const { token } = useContext(AuthContext);
+    const { token, user } = useContext(AuthContext);
     const [bugs, setBugs] = useState([]);
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -62,6 +62,62 @@ const Kanban = () => {
     ];
 
     const getBugsByStatus = (status) => bugs.filter(bug => bug.status === status);
+
+    const canMove = (bug, targetStatus) => {
+        const role = user?.role;
+        if (!role) return false;
+        if (role === 'ADMIN' || role === 'PROJECT_MANAGER') return true;
+        if (role === 'DEVELOPER') return targetStatus === 'IN_PROGRESS' || targetStatus === 'REVIEW';
+        if (role === 'TESTER') {
+            if (targetStatus === 'TESTING' || targetStatus === 'CLOSED') return true;
+            if (targetStatus === 'OPEN') return bug.status === 'CLOSED';
+            return false;
+        }
+        return false;
+    };
+
+    const isOverdue = (bug) => {
+        if (!bug?.dueDate) return false;
+        if (bug?.status === 'CLOSED') return false;
+        const today = new Date();
+        const due = new Date(bug.dueDate);
+        due.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        return due < today;
+    };
+
+    const handleDropToStatus = async (bugId, targetStatus) => {
+        const bug = bugs.find(b => String(b.id) === String(bugId));
+        if (!bug) return;
+        if (bug.status === targetStatus) return;
+
+        if (!canMove(bug, targetStatus)) {
+            alert("You don't have permission to move this bug to that status.");
+            return;
+        }
+
+        let resolutionNotes = null;
+        if (targetStatus === 'CLOSED') {
+            resolutionNotes = window.prompt('Resolution notes (required to close):', bug.resolutionNotes || '');
+            if (!resolutionNotes || resolutionNotes.trim().length < 5) {
+                alert('Closing requires resolution notes.');
+                return;
+            }
+        }
+
+        const prevStatus = bug.status;
+        setBugs(prev => prev.map(b => (b.id === bug.id ? { ...b, status: targetStatus } : b)));
+
+        try {
+            await axios.put(`http://localhost:8080/api/bugs/${bug.id}/status`, {}, {
+                params: { status: targetStatus, resolutionNotes: resolutionNotes || undefined },
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } catch (error) {
+            setBugs(prev => prev.map(b => (b.id === bug.id ? { ...b, status: prevStatus } : b)));
+            alert(error.response?.data?.error || "Failed to update status");
+        }
+    };
 
     const filteredProjects = useMemo(() => {
         const q = searchTerm.trim().toLowerCase();
@@ -130,7 +186,16 @@ const Kanban = () => {
                     {loading ? (
                         <div style={{ textAlign: 'center', width: '100%', padding: '3rem', color: 'var(--text-secondary)' }}>Loading board...</div>
                     ) : columns.map(column => (
-                        <div key={column.id} className="kanban-column">
+                        <div
+                            key={column.id}
+                            className="kanban-column"
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                const id = e.dataTransfer.getData('text/plain');
+                                if (id) handleDropToStatus(id, column.id);
+                            }}
+                        >
                             <div className="kanban-column-header">
                                 <h3 className="column-title">
                                     <span className={`kanban-dot kanban-dot-${column.id.toLowerCase()}`} />
@@ -140,7 +205,20 @@ const Kanban = () => {
                             </div>
                             <div className="kanban-cards">
                                 {getBugsByStatus(column.id).map(bug => (
-                                    <div key={bug.id} className="bug-card" role="button" tabIndex={0} onClick={() => navigate(`/bugs/${bug.id}`)}>
+                                    <div
+                                        key={bug.id}
+                                        className="bug-card"
+                                        role="button"
+                                        tabIndex={0}
+                                        draggable
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData('text/plain', String(bug.id));
+                                            e.dataTransfer.effectAllowed = 'move';
+                                        }}
+                                        onClick={() => navigate(`/bugs/${bug.id}`)}
+                                        title="Drag to move status"
+                                        style={isOverdue(bug) ? { border: '1px solid #ef4444' } : undefined}
+                                    >
                                         <div className="bug-card-header">
                                             <span className="bug-id">{bug.bugId}</span>
                                             <span style={{
@@ -156,7 +234,14 @@ const Kanban = () => {
                                             <div className="avatar-sm" style={{ width: '24px', height: '24px', fontSize: '0.7rem' }}>
                                                 {bug.assigneeName?.charAt(0) || '?'}
                                             </div>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{bug.assigneeName}</div>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{bug.assigneeName}</div>
+                                                {bug.dueDate && (
+                                                    <div style={{ fontSize: '0.7rem', color: isOverdue(bug) ? '#ef4444' : 'var(--text-secondary)', fontWeight: isOverdue(bug) ? 800 : 600 }}>
+                                                        Due {bug.dueDate}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

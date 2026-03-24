@@ -15,11 +15,11 @@ import Kanban from "./pages/Kanban";
 import MyAssignedBugs from "./pages/MyAssignedBugs";
 import Reports from "./pages/Reports";
 import BugDetail from "./pages/BugDetail";
+import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
 import "./index.css";
 import { useContext } from "react";
 import AuthContext from "./context/AuthContext";
-
-// ... (ProtectedRoute and AppRoutes remain same)
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { token, user, logout } = useContext(AuthContext);
@@ -181,7 +181,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardLayout title="Notifications">
-              <Invitations />
+              <Notifications />
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -190,14 +190,16 @@ function AppRoutes() {
         path="/profile"
         element={
           <ProtectedRoute>
-            <Settings />
+            <DashboardLayout title="Profile">
+              <Profile />
+            </DashboardLayout>
           </ProtectedRoute>
         }
       />
       <Route
         path="/my-bugs"
         element={
-          <ProtectedRoute allowedRoles={["DEVELOPER", "TESTER"]}>
+          <ProtectedRoute allowedRoles={["PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
             <DashboardLayout title="My Assigned Bugs">
               <MyAssignedBugs />
             </DashboardLayout>

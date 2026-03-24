@@ -12,8 +12,10 @@ const BugDetail = () => {
   const [bug, setBug] = useState(null);
   const [comments, setComments] = useState([]);
   const [attachments, setAttachments] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [closeNotes, setCloseNotes] = useState("");
 
   const [commentMessage, setCommentMessage] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
@@ -21,12 +23,14 @@ const BugDetail = () => {
   const [attachmentName, setAttachmentName] = useState("");
   const [attachmentUrl, setAttachmentUrl] = useState("");
   const [attachmentLoading, setAttachmentLoading] = useState(false);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [bugRes, commentsRes, attachmentsRes] = await Promise.all([
+        const [bugRes, commentsRes, attachmentsRes, activityRes] = await Promise.all([
           axios.get(`http://localhost:8080/api/bugs/${bugId}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -36,10 +40,15 @@ const BugDetail = () => {
           axios.get(`http://localhost:8080/api/bugs/${bugId}/attachments`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
+          axios.get(`http://localhost:8080/api/bugs/${bugId}/activity`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
         setBug(bugRes.data);
+        setCloseNotes(bugRes.data?.resolutionNotes || "");
         setComments(commentsRes.data);
         setAttachments(attachmentsRes.data);
+        setActivity(activityRes.data);
       } catch (err) {
         console.error("Error loading bug detail:", err);
       } finally {
@@ -69,8 +78,9 @@ const BugDetail = () => {
 
   const [nextStatus, setNextStatus] = useState("");
   useEffect(() => {
-    if (allowedStatuses.length > 0) setNextStatus(allowedStatuses[0]);
-  }, [allowedStatuses.join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (allowedStatuses.length === 0) return;
+    setNextStatus((prev) => (prev && allowedStatuses.includes(prev) ? prev : allowedStatuses[0]));
+  }, [allowedStatuses]);
 
   const refreshComments = async () => {
     const res = await axios.get(`http://localhost:8080/api/bugs/${bugId}/comments`, {
@@ -88,9 +98,17 @@ const BugDetail = () => {
 
   const handleUpdateStatus = async () => {
     if (!nextStatus) return;
+    if (nextStatus === "CLOSED" && (!closeNotes || closeNotes.trim().length < 5)) {
+      alert("Resolution notes are required to close a bug.");
+      return;
+    }
     setStatusUpdating(true);
     try {
-      await axios.put(`http://localhost:8080/api/bugs/${bugId}/status?status=${nextStatus}`, {}, {
+      await axios.put(`http://localhost:8080/api/bugs/${bugId}/status`, {}, {
+        params: {
+          status: nextStatus,
+          resolutionNotes: nextStatus === "CLOSED" ? closeNotes : undefined,
+        },
         headers: { Authorization: `Bearer ${token}` },
       });
       const bugRes = await axios.get(`http://localhost:8080/api/bugs/${bugId}`, {
@@ -146,6 +164,44 @@ const BugDetail = () => {
     }
   };
 
+  const downloadInternal = async (attachment) => {
+    try {
+      const res = await axios.get(`http://localhost:8080${attachment.url}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+      const blobUrl = window.URL.createObjectURL(res.data);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = attachment.name || "attachment";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      alert(err.response?.data?.error || "Download failed");
+    }
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!uploadFile) return;
+    setUploadLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", uploadFile);
+      await axios.post(`http://localhost:8080/api/bugs/${bugId}/attachments/upload`, fd, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUploadFile(null);
+      await refreshAttachments();
+    } catch (err) {
+      alert(err.response?.data?.error || "Upload failed");
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="page-container">
@@ -195,6 +251,23 @@ const BugDetail = () => {
           <h4>Description</h4>
           <div className="detail-description">{bug.description || "No description provided."}</div>
 
+          {(bug.tags || []).length > 0 && (
+            <div style={{ marginTop: "0.75rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              {bug.tags.map((t) => (
+                <span key={t} className="status-badge" style={{ background: "var(--card-bg)", border: "1px solid var(--border-color)" }}>
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {bug.status === "CLOSED" && bug.resolutionNotes && (
+            <>
+              <h4 style={{ marginTop: "1.25rem" }}>Resolution Notes</h4>
+              <div className="detail-description" style={{ whiteSpace: "pre-wrap" }}>{bug.resolutionNotes}</div>
+            </>
+          )}
+
           <h4 style={{ marginTop: "1.25rem" }}>Comments</h4>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {comments.length === 0 ? (
@@ -226,17 +299,44 @@ const BugDetail = () => {
             </form>
           </div>
 
+          <h4 style={{ marginTop: "1.25rem" }}>Activity</h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+            {activity.length === 0 ? (
+              <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>No activity yet.</div>
+            ) : (
+              activity.map((a) => (
+                <div
+                  key={a.id}
+                  style={{
+                    padding: "0.75rem",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: "0.75rem",
+                    background: "var(--card-bg)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", marginBottom: "0.35rem" }}>
+                    <div style={{ fontWeight: 800, fontSize: "0.85rem" }}>{a.action}</div>
+                    <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>
+                      {a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "0.9rem" }}>{a.message}</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginTop: "0.25rem" }}>
+                    {a.actorName}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
           <h4 style={{ marginTop: "1.25rem" }}>Attachments</h4>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {attachments.length === 0 ? (
               <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>No attachments yet.</div>
             ) : (
               attachments.map((a) => (
-                <a
+                <div
                   key={a.id}
-                  href={a.url}
-                  target="_blank"
-                  rel="noreferrer"
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -245,15 +345,37 @@ const BugDetail = () => {
                     border: "1px solid var(--border-color)",
                     borderRadius: "0.75rem",
                     background: "var(--card-bg)",
-                    textDecoration: "none",
-                    color: "inherit",
                   }}
                 >
                   <span style={{ fontWeight: 700 }}>{a.name}</span>
-                  <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>Open</span>
-                </a>
+                  {a.url?.startsWith("/api/") ? (
+                    <button className="page-btn active" onClick={() => downloadInternal(a)}>
+                      Download
+                    </button>
+                  ) : (
+                    <a href={a.url} target="_blank" rel="noreferrer" className="page-btn active">
+                      Open
+                    </a>
+                  )}
+                </div>
               ))
             )}
+
+            <form onSubmit={handleUpload} className="ui-form" style={{ marginTop: "0.5rem" }}>
+              <div className="ui-field">
+                <label>Upload file</label>
+                <input
+                  type="file"
+                  className="ui-input"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                />
+              </div>
+              <div className="ui-modal-footer" style={{ justifyContent: "flex-start" }}>
+                <button type="submit" disabled={uploadLoading || !uploadFile} className="ui-btn ui-btn-primary">
+                  {uploadLoading ? "Uploading…" : "Upload"}
+                </button>
+              </div>
+            </form>
 
             <form onSubmit={handleAddAttachment} className="ui-form" style={{ marginTop: "0.5rem" }}>
               <div className="ui-form-row">
@@ -281,9 +403,19 @@ const BugDetail = () => {
             <span className={`status-badge status-${bug.status.toLowerCase()}`}>{bug.status.replace("_", " ")}</span>
           </div>
           <div className="meta-item">
+            <span className="meta-label">SEVERITY</span>
+            <span className="meta-value" style={{ fontWeight: 800 }}>{bug.severity || "MINOR"}</span>
+          </div>
+          <div className="meta-item">
             <span className="meta-label">PRIORITY</span>
             <span className={`priority-${bug.priority.toLowerCase()}`} style={{ fontWeight: 700 }}>
               {bug.priority}
+            </span>
+          </div>
+          <div className="meta-item">
+            <span className="meta-label">DUE DATE</span>
+            <span className="meta-value" style={{ color: bug.dueDate && bug.status !== "CLOSED" && new Date(bug.dueDate) < new Date(new Date().toISOString().slice(0, 10)) ? "#ef4444" : undefined }}>
+              {bug.dueDate || "-"}
             </span>
           </div>
           <div className="meta-item">
@@ -310,6 +442,15 @@ const BugDetail = () => {
                     </option>
                   ))}
                 </select>
+                {nextStatus === "CLOSED" && (
+                  <textarea
+                    className="ui-textarea"
+                    value={closeNotes}
+                    onChange={(e) => setCloseNotes(e.target.value)}
+                    placeholder="Resolution notes (required)…"
+                    style={{ marginTop: "0.5rem" }}
+                  />
+                )}
                 <button className="ui-btn ui-btn-primary" disabled={statusUpdating} style={{ marginTop: "0.5rem" }} onClick={handleUpdateStatus}>
                   {statusUpdating ? "Updating…" : "Update"}
                 </button>
@@ -323,4 +464,3 @@ const BugDetail = () => {
 };
 
 export default BugDetail;
-

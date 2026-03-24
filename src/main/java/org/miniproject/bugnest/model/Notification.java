@@ -8,32 +8,31 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bug_attachments")
+@Table(name = "notifications")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BugAttachment {
+public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "bug_id", nullable = false)
-    private Bug bug;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploader_id", nullable = false)
-    private User uploader;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
-    private String name;
+    private String type; // e.g. INVITE, BUG_ASSIGNED, BUG_STATUS, COMMENT, ATTACHMENT
 
-    @Column(nullable = false, length = 2048)
-    private String url;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String message;
 
-    @Column(name = "storage_path", length = 2048)
-    private String storagePath; // non-null only for uploaded files stored on server
+    @Column(length = 1024)
+    private String link; // frontend route e.g. /bugs/1
+
+    @Column(name = "is_read", nullable = false)
+    private boolean read = false;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -43,3 +42,4 @@ public class BugAttachment {
         createdAt = LocalDateTime.now();
     }
 }
+
