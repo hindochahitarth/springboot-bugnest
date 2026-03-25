@@ -241,6 +241,11 @@ public class BugService {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
+        if (creator.getRole() != Role.ADMIN && project.getStatus() != null &&
+                !"ACTIVE".equalsIgnoreCase(project.getStatus().trim())) {
+            throw new RuntimeException("Project is not active");
+        }
+
         if (creator.getRole() != Role.ADMIN && 
             !memberRepository.existsByProjectAndUserAndStatus(project, creator, ProjectMemberStatus.ACCEPTED)) {
             throw new RuntimeException("Access denied: Only project members can report bugs");

@@ -75,11 +75,13 @@ const Sidebar = () => {
     const allMenuItems = [
         { label: "Dashboard", path: `/${role.toLowerCase()}/dashboard`, icon: <DashboardIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Projects", path: "/projects", icon: <ProjectsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Admin Projects", path: "/admin/projects", icon: <ProjectsIcon />, roles: ["ADMIN"] },
         { label: "Bugs", path: "/bugs", icon: <BugsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "My Bugs", path: "/my-bugs", icon: <BugsIcon />, roles: ["PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Kanban", path: "/kanban", icon: <KanbanIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Notifications", path: "/notifications", icon: <BellIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Reports", path: "/reports", icon: <ReportsIcon />, roles: ["ADMIN", "PROJECT_MANAGER"] },
+        { label: "System Reports", path: "/admin/reports", icon: <ReportsIcon />, roles: ["ADMIN"] },
         { label: "Users", path: "/users", icon: <UsersIcon />, roles: ["ADMIN"] },
         { label: "Profile", path: "/profile", icon: <SettingsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
     ];

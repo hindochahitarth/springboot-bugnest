@@ -60,12 +60,15 @@ public class ProjectService {
         List<Project> projects;
         
         if (user.getRole() == Role.ADMIN) {
-            projects = projectRepository.findAll();
+            projects = projectRepository.findAll().stream()
+                    .filter(p -> !"DELETED".equalsIgnoreCase(normalizeStatus(p.getStatus())))
+                    .collect(Collectors.toList());
         } else {
             // Find projects where user is an ACCEPTED member (using ID for robustness)
             projects = memberRepository.findByUser_IdAndStatus(user.getId(), ProjectMemberStatus.ACCEPTED)
                     .stream()
                     .map(ProjectMember::getProject)
+                    .filter(p -> p != null && "ACTIVE".equalsIgnoreCase(normalizeStatus(p.getStatus())))
                     .collect(Collectors.toList());
         }
 
@@ -286,6 +289,11 @@ public class ProjectService {
                 .status(project.getStatus())
                 .createdAt(project.getCreatedAt())
                 .build();
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.isBlank()) return "ACTIVE";
+        return status.trim().toUpperCase(java.util.Locale.ROOT);
     }
 
     private ProjectMemberResponse mapToMemberResponse(ProjectMember member) {
