@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/client';
 import AuthContext from '../context/AuthContext';
 import './Bugs.css';
 
@@ -34,9 +34,7 @@ const Bugs = () => {
 
     const fetchProjects = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/projects', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/api/projects');
             setProjects(response.data);
         } catch (error) {
             console.error("Error fetching projects:", error);
@@ -47,7 +45,7 @@ const Bugs = () => {
         setLoading(true);
         try {
             const projectIdParam = urlProjectId ? urlProjectId : (selectedProjectId || undefined);
-            const response = await axios.get('http://localhost:8080/api/bugs/paged', {
+            const response = await api.get('/api/bugs/paged', {
                 params: {
                     projectId: projectIdParam ? Number(projectIdParam) : undefined,
                     tag: tagFilter || undefined,
@@ -58,7 +56,6 @@ const Bugs = () => {
                     sort: "updatedAt",
                     dir: "desc"
                 },
-                headers: { Authorization: `Bearer ${token}` }
             });
             setPageData(response.data);
         } catch (error) {
@@ -238,7 +235,6 @@ const Bugs = () => {
 
             {showCreateModal && (
                 <CreateBugModal
-                    token={token}
                     projectId={activeProjectId}
                     onClose={() => setShowCreateModal(false)}
                     onSuccess={() => {
@@ -251,7 +247,6 @@ const Bugs = () => {
 
             {showEditModal && selectedBug && (
                 <EditBugModal
-                    token={token}
                     bug={selectedBug}
                     onClose={() => setShowEditModal(false)}
                     onSuccess={() => {
@@ -312,7 +307,9 @@ const BugDetailModal = ({ bug, onClose }) => {
     );
 };
 
-const EditBugModal = ({ token, bug, onClose, onSuccess }) => {
+const EditBugModal = ({ bug, onClose, onSuccess }) => {
+    const { user } = useContext(AuthContext);
+    const canAssign = user?.role === 'ADMIN' || user?.role === 'PROJECT_MANAGER';
     const [formData, setFormData] = useState({
         title: bug.title,
         description: bug.description,
@@ -326,16 +323,32 @@ const EditBugModal = ({ token, bug, onClose, onSuccess }) => {
     });
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [suggestingPriority, setSuggestingPriority] = useState(false);
 
     useEffect(() => {
         fetchMembers();
     }, [bug.projectId]);
 
+    const suggestPriorityAi = async () => {
+        setSuggestingPriority(true);
+        try {
+            const { data } = await api.post('/api/ai/bugs/suggest-priority', {
+                title: formData.title,
+                description: formData.description,
+            });
+            if (data?.priority) {
+                setFormData((prev) => ({ ...prev, priority: data.priority }));
+            }
+        } catch (e) {
+            alert(e.response?.data?.error || 'Could not suggest priority');
+        } finally {
+            setSuggestingPriority(false);
+        }
+    };
+
     const fetchMembers = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/projects/${bug.projectId}/members`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/api/projects/${bug.projectId}/members`);
             setMembers(response.data.filter(m => m.status === 'ACCEPTED'));
         } catch (error) {
             console.error("Error fetching members:", error);
@@ -357,7 +370,7 @@ const EditBugModal = ({ token, bug, onClose, onSuccess }) => {
         if (!payload.dueDate) payload.dueDate = null;
 
         try {
-            await axios.put(`http://localhost:8080/api/bugs/${bug.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+            await api.put(`/api/bugs/${bug.id}`, payload);
             onSuccess();
         } catch (error) {
             alert(error.response?.data?.error || "Failed to update bug");
@@ -387,12 +400,17 @@ const EditBugModal = ({ token, bug, onClose, onSuccess }) => {
                         <div className="ui-form-row">
                             <div className="ui-field">
                                 <label>Priority</label>
-                                <select className="ui-input" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
-                                    <option value="LOW">Low</option>
-                                    <option value="MEDIUM">Medium</option>
-                                    <option value="HIGH">High</option>
-                                    <option value="HIGHEST">Highest</option>
-                                </select>
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <select className="ui-input" style={{ flex: 1 }} value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
+                                        <option value="LOW">Low</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="HIGHEST">Highest</option>
+                                    </select>
+                                    <button type="button" className="btn-primary-sm" disabled={suggestingPriority || !formData.title?.trim()} onClick={suggestPriorityAi} title="Suggest from title & description">
+                                        {suggestingPriority ? '…' : 'AI'}
+                                    </button>
+                                </div>
                             </div>
                             <div className="ui-field">
                                 <label>Severity</label>
@@ -435,7 +453,12 @@ const EditBugModal = ({ token, bug, onClose, onSuccess }) => {
 
                         <div className="ui-field">
                             <label>Assign to</label>
-                            <select className="ui-input" value={formData.assigneeId} onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}>
+                            <select
+                                className="ui-input"
+                                value={formData.assigneeId}
+                                disabled={!canAssign}
+                                onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}
+                            >
                                 <option value="">Unassigned</option>
                                 {members.map(m => (
                                     <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>
@@ -461,7 +484,9 @@ const EditBugModal = ({ token, bug, onClose, onSuccess }) => {
     );
 };
 
-const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
+const CreateBugModal = ({ projectId, onClose, onSuccess }) => {
+    const { user } = useContext(AuthContext);
+    const canAssign = user?.role === 'ADMIN' || user?.role === 'PROJECT_MANAGER';
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -475,6 +500,7 @@ const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
     const [projects, setProjects] = useState([]);
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [suggestingPriority, setSuggestingPriority] = useState(false);
 
     useEffect(() => {
         if (!projectId) {
@@ -484,11 +510,26 @@ const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
         }
     }, [projectId]);
 
+    const suggestPriorityAi = async () => {
+        setSuggestingPriority(true);
+        try {
+            const { data } = await api.post('/api/ai/bugs/suggest-priority', {
+                title: formData.title,
+                description: formData.description,
+            });
+            if (data?.priority) {
+                setFormData((prev) => ({ ...prev, priority: data.priority }));
+            }
+        } catch (e) {
+            alert(e.response?.data?.error || 'Could not suggest priority');
+        } finally {
+            setSuggestingPriority(false);
+        }
+    };
+
     const fetchProjects = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/projects', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/api/projects');
             setProjects(response.data);
         } catch (error) {
             console.error("Error fetching projects:", error);
@@ -501,9 +542,7 @@ const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
             return;
         }
         try {
-            const response = await axios.get(`http://localhost:8080/api/projects/${pId}/members`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/api/projects/${pId}/members`);
             setMembers(response.data.filter(m => m.status === 'ACCEPTED'));
         } catch (error) {
             console.error("Error fetching members:", error);
@@ -533,9 +572,7 @@ const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
         if (!payload.dueDate) payload.dueDate = null;
 
         try {
-            await axios.post('http://localhost:8080/api/bugs', payload, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.post('/api/bugs', payload);
             onSuccess();
         } catch (error) {
             alert(error.response?.data?.error || "Failed to report bug");
@@ -577,12 +614,17 @@ const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
                         <div className="ui-form-row">
                             <div className="ui-field">
                                 <label>Priority</label>
-                                <select className="ui-input" value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
-                                    <option value="LOW">Low</option>
-                                    <option value="MEDIUM">Medium</option>
-                                    <option value="HIGH">High</option>
-                                    <option value="HIGHEST">Highest</option>
-                                </select>
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <select className="ui-input" style={{ flex: 1 }} value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })}>
+                                        <option value="LOW">Low</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="HIGHEST">Highest</option>
+                                    </select>
+                                    <button type="button" className="btn-primary-sm" disabled={suggestingPriority || !formData.title?.trim()} onClick={suggestPriorityAi} title="Suggest from title & description">
+                                        {suggestingPriority ? '…' : 'AI'}
+                                    </button>
+                                </div>
                             </div>
                             <div className="ui-field">
                                 <label>Severity</label>
@@ -595,7 +637,12 @@ const CreateBugModal = ({ token, projectId, onClose, onSuccess }) => {
                             </div>
                             <div className="ui-field">
                                 <label>Assignee</label>
-                                <select className="ui-input" value={formData.assigneeId} onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}>
+                                <select
+                                    className="ui-input"
+                                    value={canAssign ? formData.assigneeId : ''}
+                                    disabled={!canAssign}
+                                    onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}
+                                >
                                     <option value="">Unassigned</option>
                                     {members.map(m => (
                                         <option key={m.userId} value={m.userId}>{m.userName} ({m.role})</option>

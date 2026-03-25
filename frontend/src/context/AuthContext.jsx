@@ -5,8 +5,26 @@ import axios from "axios";
 
 const AuthContext = createContext();
 
+function readValidTokenFromStorage() {
+    const t = localStorage.getItem("token");
+    if (!t) return null;
+    try {
+        const decoded = jwtDecode(t);
+        if (decoded.exp * 1000 < Date.now()) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            return null;
+        }
+        return t;
+    } catch {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        return null;
+    }
+}
+
 export const AuthProvider = ({ children }) => {
-    const [token, setToken] = useState(localStorage.getItem("token") || null);
+    const [token, setToken] = useState(readValidTokenFromStorage);
     const [user, setUser] = useState(() => {
         const storedToken = localStorage.getItem("token");
         const storedRole = localStorage.getItem("role");

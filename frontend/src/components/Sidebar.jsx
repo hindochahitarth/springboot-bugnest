@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/client';
 import AuthContext from '../context/AuthContext';
 import '../Dashboard.css';
 
@@ -75,11 +75,13 @@ const Sidebar = () => {
     const allMenuItems = [
         { label: "Dashboard", path: `/${role.toLowerCase()}/dashboard`, icon: <DashboardIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Projects", path: "/projects", icon: <ProjectsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
+        { label: "Admin Projects", path: "/admin/projects", icon: <ProjectsIcon />, roles: ["ADMIN"] },
         { label: "Bugs", path: "/bugs", icon: <BugsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "My Bugs", path: "/my-bugs", icon: <BugsIcon />, roles: ["PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Kanban", path: "/kanban", icon: <KanbanIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Notifications", path: "/notifications", icon: <BellIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
         { label: "Reports", path: "/reports", icon: <ReportsIcon />, roles: ["ADMIN", "PROJECT_MANAGER"] },
+        { label: "System Reports", path: "/admin/reports", icon: <ReportsIcon />, roles: ["ADMIN"] },
         { label: "Users", path: "/users", icon: <UsersIcon />, roles: ["ADMIN"] },
         { label: "Profile", path: "/profile", icon: <SettingsIcon />, roles: ["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"] },
     ];
@@ -89,9 +91,8 @@ const Sidebar = () => {
     useEffect(() => {
         const fetchDue = async () => {
             try {
-                const res = await axios.get('http://localhost:8080/api/bugs/paged', {
+                const res = await api.get('/api/bugs/paged', {
                     params: { page: 0, size: 50, sort: 'dueDate', dir: 'asc' },
-                    headers: { Authorization: `Bearer ${token}` }
                 });
                 const items = res.data?.content || [];
                 const today = new Date();
@@ -118,9 +119,7 @@ const Sidebar = () => {
 
         const fetchUnreadNotifications = async () => {
             try {
-                const res = await axios.get('http://localhost:8080/api/notifications/unread-count', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get('/api/notifications/unread-count');
                 setUnreadNotifications(res.data?.unread || 0);
             } catch (e) {
                 setUnreadNotifications(0);

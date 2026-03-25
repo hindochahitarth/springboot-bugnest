@@ -17,6 +17,8 @@ import Reports from "./pages/Reports";
 import BugDetail from "./pages/BugDetail";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import AdminProjects from "./pages/AdminProjects";
+import AdminSystemReports from "./pages/AdminSystemReports";
 import "./index.css";
 import { useContext } from "react";
 import AuthContext from "./context/AuthContext";
@@ -117,6 +119,16 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/projects"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <DashboardLayout title="Project Management">
+              <AdminProjects />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/projects/:projectId/bugs"
         element={
           <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER", "DEVELOPER", "TESTER"]}>
@@ -212,6 +224,16 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={["ADMIN", "PROJECT_MANAGER"]}>
             <DashboardLayout title="Reports & Analytics">
               <Reports />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <DashboardLayout title="System Reports">
+              <AdminSystemReports />
             </DashboardLayout>
           </ProtectedRoute>
         }

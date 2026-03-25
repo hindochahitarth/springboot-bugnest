@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "./context/AuthContext";
+import api from "./api/client";
 import Sidebar from "./components/Sidebar";
 import TopNavbar from "./components/TopNavbar";
 import "./Dashboard.css";
@@ -89,16 +90,25 @@ const SummaryCard = ({ title, value, icon, colorClass = "" }) => (
     </div>
 );
 
+const ActionCard = ({ title, desc, icon }) => (
+    <div className="action-card">
+        <div className="action-icon">{icon}</div>
+        <div className="action-details">
+            <h3 className="action-title">{title}</h3>
+            <p className="action-desc">{desc}</p>
+        </div>
+    </div>
+);
+
 export const AdminDashboard = () => {
+    const navigate = useNavigate();
     const { token } = useContext(AuthContext);
     const [stats, setStats] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get("/api/stats/dashboard");
                 setStats(res.data);
             } catch (err) {
                 console.error("Error fetching stats:", err);
@@ -116,11 +126,18 @@ export const AdminDashboard = () => {
                 <SummaryCard title="System Health" value="Optimal" icon={<HeartIcon />} colorClass="card-health" />
             </div>
 
-            <div className="recent-activities-card">
-                <h3 className="section-title">Recent Activities</h3>
-                <div className="empty-state">
-                    <p>No recent system activities found.</p>
-                    <button className="btn-secondary">View All Logs</button>
+            <div className="recent-activities-card" style={{ marginTop: '2rem' }}>
+                <h3 className="section-title">Quick Actions</h3>
+                <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', marginTop: '1rem' }}>
+                    <div onClick={() => navigate('/users')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="User Management" desc="Create users and manage roles." icon={<UsersIcon />} />
+                    </div>
+                    <div onClick={() => navigate('/admin/projects')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="Project Management" desc="Edit, deactivate, or delete projects." icon={<RocketIcon />} />
+                    </div>
+                    <div onClick={() => navigate('/admin/reports')} style={{ cursor: 'pointer' }}>
+                        <ActionCard title="System Reports" desc="Per-user and per-project metrics with export." icon={<DocumentIcon />} />
+                    </div>
                 </div>
             </div>
         </DashboardLayout>
@@ -128,16 +145,6 @@ export const AdminDashboard = () => {
 };
 
 // --- Manager Dashboard Components ---
-
-const ActionCard = ({ title, desc, icon }) => (
-    <div className="action-card">
-        <div className="action-icon">{icon}</div>
-        <div className="action-details">
-            <h3 className="action-title">{title}</h3>
-            <p className="action-desc">{desc}</p>
-        </div>
-    </div>
-);
 
 const ProjectRow = ({ name, members, progress }) => (
     <div className="project-row">
@@ -176,9 +183,7 @@ export const ManagerDashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get("/api/stats/dashboard");
                 setStats(res.data);
             } catch (err) {
                 console.error("Error fetching stats:", err);
@@ -218,9 +223,7 @@ export const DeveloperDashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get("/api/stats/dashboard");
                 setStats(res.data);
             } catch (err) {
                 console.error("Error fetching stats:", err);
@@ -264,9 +267,7 @@ export const TesterDashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/stats/dashboard", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get("/api/stats/dashboard");
                 setStats(res.data);
             } catch (err) {
                 console.error("Error fetching stats:", err);

@@ -241,6 +241,11 @@ public class BugService {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
+        if (creator.getRole() != Role.ADMIN && project.getStatus() != null &&
+                !"ACTIVE".equalsIgnoreCase(project.getStatus().trim())) {
+            throw new RuntimeException("Project is not active");
+        }
+
         if (creator.getRole() != Role.ADMIN && 
             !memberRepository.existsByProjectAndUserAndStatus(project, creator, ProjectMemberStatus.ACCEPTED)) {
             throw new RuntimeException("Access denied: Only project members can report bugs");
@@ -261,7 +266,8 @@ public class BugService {
         bug.setProject(project);
         bug.setCreator(creator);
 
-        if (request.getAssigneeId() != null && request.getAssigneeId() > 0) {
+        boolean canAssign = creator.getRole() == Role.ADMIN || creator.getRole() == Role.PROJECT_MANAGER;
+        if (canAssign && request.getAssigneeId() != null && request.getAssigneeId() > 0) {
             User assignee = userRepository.findById(request.getAssigneeId())
                     .orElseThrow(() -> new RuntimeException("Assignee not found"));
             
@@ -382,17 +388,21 @@ public class BugService {
             bug.setStatus(newStatus);
         }
         
-        if (request.getAssigneeId() != null && request.getAssigneeId() > 0) {
-            User assignee = userRepository.findById(request.getAssigneeId())
-                    .orElseThrow(() -> new RuntimeException("Assignee not found"));
-            
-            if (!memberRepository.existsByProjectAndUserAndStatus(bug.getProject(), assignee, ProjectMemberStatus.ACCEPTED)) {
-                throw new RuntimeException("Assignee must be a member of the project");
+        boolean canAssign = user.getRole() == Role.ADMIN || user.getRole() == Role.PROJECT_MANAGER;
+        // Only Admin/PM can change assignee. For other roles we do not touch the existing assignee.
+        if (canAssign) {
+            if (request.getAssigneeId() != null && request.getAssigneeId() > 0) {
+                User assignee = userRepository.findById(request.getAssigneeId())
+                        .orElseThrow(() -> new RuntimeException("Assignee not found"));
+                
+                if (!memberRepository.existsByProjectAndUserAndStatus(bug.getProject(), assignee, ProjectMemberStatus.ACCEPTED)) {
+                    throw new RuntimeException("Assignee must be a member of the project");
+                }
+                bug.setAssignee(assignee);
+            } else {
+                // Allow unassigning if ID is null or 0 (standard for "Unassigned")
+                bug.setAssignee(null);
             }
-            bug.setAssignee(assignee);
-        } else {
-            // Allow unassigning if ID is null or 0 (standard for "Unassigned")
-            bug.setAssignee(null);
         }
 
         Bug saved = bugRepository.save(bug);
@@ -518,7 +528,8 @@ public class BugService {
     }
 
     public Page<BugResponse> getPagedBugsForUser(User user, Long projectId, String tag, String severity, Boolean overdue, Pageable pageable) {
-        Specification<Bug> spec = Specification.where((Specification<Bug>) null);
+        // Spring Data JPA 4: Specification.where(null) is invalid; start with an always-true predicate.
+        Specification<Bug> spec = (root, query, cb) -> cb.conjunction();
 
         if (projectId != null) {
             Project project = projectRepository.findById(projectId)
